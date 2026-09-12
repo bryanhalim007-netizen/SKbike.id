@@ -40,6 +40,7 @@ export default function AdminPanel() {
   const [editing, setEditing] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState("Semua");
 
   const load = useCallback(() => {
     setProducts(store.getProducts({ sort: "newest" }));
@@ -63,9 +64,14 @@ export default function AdminPanel() {
   if (!user) return <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center text-slate-500">Memuat...</div>;
 
   const q = search.trim().toLowerCase();
-  const filtered = q
-    ? products.filter((p) => p.name.toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q))
-    : products;
+  const catOrder = (c) => { const i = store.CATEGORIES.indexOf(c); return i === -1 ? 999 : i; };
+  const filtered = products
+    .filter((p) => {
+      const matchesQ = !q || p.name.toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q);
+      const matchesCat = catFilter === "Semua" || p.category === catFilter;
+      return matchesQ && matchesCat;
+    })
+    .sort((a, b) => catOrder(a.category) - catOrder(b.category) || a.name.localeCompare(b.name));
 
   return (
     <div className="min-h-screen bg-[#0A0D14]">
@@ -109,8 +115,8 @@ export default function AdminPanel() {
           <StatCard icon={Wallet} label="Nilai Inventaris" value={rupiah(stats.inventory_value)} testid="stat-inventory-value" />
         </div>
 
-        <div className="mb-4">
-          <div className="relative max-w-md">
+        <div className="mb-4 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
             <input
               data-testid="admin-search-input"
@@ -120,6 +126,15 @@ export default function AdminPanel() {
               className="w-full rounded-full border border-slate-700 bg-[#161F2E] pl-11 pr-4 py-3 text-sm text-white outline-none focus:border-[#FF2E2E] transition-colors"
             />
           </div>
+          <select
+            data-testid="admin-category-filter"
+            value={catFilter}
+            onChange={(e) => setCatFilter(e.target.value)}
+            className="rounded-full border border-slate-700 bg-[#161F2E] px-4 py-3 text-sm text-white outline-none focus:border-[#FF2E2E] transition-colors"
+          >
+            <option value="Semua">Semua Kategori</option>
+            {store.CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
 
         <div className="rounded-2xl border border-slate-800 bg-[#111723] overflow-hidden">

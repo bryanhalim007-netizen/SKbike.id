@@ -38,7 +38,7 @@ export function WhatsAppPopout({ number }) {
             <button
               data-testid="whatsapp-popout-close"
               onClick={() => setOpen(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-black/15 text-white hover:bg-black/30 transition-colors"
+              className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/15 text-white hover:bg-black/30 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -71,7 +71,7 @@ export function WhatsAppPopout({ number }) {
             <p className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Pilih topik cepat</p>
             {QUICK_OPTIONS.map((opt, i) => (
               <button
-                key={i}
+                key={opt.label}
                 data-testid={`wa-quick-option-${i}`}
                 onClick={() => send(opt.message)}
                 className="group flex w-full items-center gap-3 rounded-2xl border border-slate-700/60 bg-[#111B21] px-4 py-3 text-left hover:border-[#25D366] hover:bg-[#16242C] transition-colors"

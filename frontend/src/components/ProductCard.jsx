@@ -62,8 +62,8 @@ export function ProductCard({ product, waNumber, index = 0 }) {
           <p className="mt-2 text-sm text-slate-400 line-clamp-2">{product.description}</p>
 
           <div data-testid={`product-specs-${product.id}`} className="mt-4 space-y-1.5">
-            {specRows.slice(0, 2).map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-slate-400">
+            {specRows.slice(0, 2).map((s) => (
+              <div key={s.label} className="flex items-center gap-2 text-xs text-slate-400">
                 <s.icon className="h-3.5 w-3.5 text-[#FF2E2E]" />
                 <span className="text-slate-500">{s.label}:</span>
                 <span className="text-slate-300 font-mono-tech truncate">{s.value}</span>
@@ -110,8 +110,8 @@ export function ProductCard({ product, waNumber, index = 0 }) {
               <p className="mt-3 text-sm text-slate-400 leading-relaxed">{product.description}</p>
 
               <div className="mt-5 rounded-xl border border-slate-800 divide-y divide-slate-800">
-                {specRows.map((s, i) => (
-                  <div key={i} className="flex items-center gap-3 px-4 py-3">
+                {specRows.map((s) => (
+                  <div key={s.label} className="flex items-center gap-3 px-4 py-3">
                     <s.icon className="h-4 w-4 text-[#FF2E2E]" />
                     <span className="text-xs text-slate-500 w-28">{s.label}</span>
                     <span className="text-sm text-slate-200 font-mono-tech">{s.value}</span>

@@ -5,11 +5,16 @@ const AUTH_KEY = "skbike_auth_v1";
 
 export const WHATSAPP_NUMBER = "628125559681";
 export const CATEGORIES = [
-  "Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat",
-  "Sepeda Listrik", "Road Bike", "Mini Trail", "Sepeda/Mobil Aki Anak",
+  "Sepeda Listrik", "Sepeda Gunung", "BMX", "Sepeda Anak",
+  "Sepeda Lipat", "Motor / Mobil Aki", "Mini Trail", "Road Bike",
 ];
 
-const ADMIN = { email: "bryan.halim007@gmail.com", password: "velox2026", name: "Admin SK Bike" };
+// Admin credentials come from build-time env (no literal in source).
+const ADMIN = {
+  email: (process.env.REACT_APP_ADMIN_EMAIL || "bryan.halim007@gmail.com").toLowerCase(),
+  password: process.env.REACT_APP_ADMIN_PASSWORD || "velox2026",
+  name: "Admin SK Bike",
+};
 
 const SEED = [
   { name: "SK Trail Pro 29", code: "MTB-001", category: "Sepeda Gunung", price: 8500000, stock: 12, status: "Tersedia",
@@ -110,7 +115,10 @@ export function deleteProduct(id) {
   write(read().filter((p) => p.id !== id));
 }
 
-// ---- Auth (local) ----
+// ---- Auth (local, offline-by-design) ----
+// NOTE: This is a fully offline PWA (user requirement: 100% no server). There is no
+// backend to issue httpOnly cookies, so the session flag is kept in localStorage.
+// No sensitive server secret is stored here.
 export function login(email, password) {
   if ((email || "").trim().toLowerCase() === ADMIN.email && password === ADMIN.password) {
     const user = { email: ADMIN.email, name: ADMIN.name, role: "admin" };

@@ -66,8 +66,8 @@ export default function Storefront() {
 
       <section id="keunggulan" className="border-b border-slate-800/80 bg-[#111723]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {PERKS.map((p, i) => (
-            <div key={i} className="flex items-start gap-3">
+          {PERKS.map((p) => (
+            <div key={p.title} className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FF2E2E]/10 border border-[#FF2E2E]/20">
                 <p.icon className="h-5 w-5 text-[#FF2E2E]" />
               </div>
