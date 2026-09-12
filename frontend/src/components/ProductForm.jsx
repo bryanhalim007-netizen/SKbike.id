@@ -1,19 +1,27 @@
-import { useEffect, useRef, useState } from "react";
-import { api, resolveImage, formatApiErrorDetail } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { useRef, useState } from "react";
+import { resolveImage } from "../lib/api";
+import * as store from "../lib/store";
 import { X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const CATEGORIES = ["Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik", "Road Bike", "Mini Trail", "Sepeda/Mobil Aki Anak"];
+const CATEGORIES = store.CATEGORIES;
 const STATUSES = ["Tersedia", "Stok Terbatas", "Inden"];
 
 const EMPTY = {
-  name: "", code: "", category: "Sepeda Gunung", description: "", price: 0, stock: 0, status: "Tersedia", image_url: "",
+  name: "", code: "", category: CATEGORIES[0], description: "", price: 0, stock: 0, status: "Tersedia", image_url: "",
   specs: { frame: "", transmisi: "", rem: "", ukuran_roda: "", baterai_motor: "" },
 };
 
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export function ProductForm({ product, onClose, onSaved }) {
-  const { authHeaders } = useAuth();
   const [form, setForm] = useState(product ? { ...EMPTY, ...product, specs: { ...EMPTY.specs, ...(product.specs || {}) } } : EMPTY);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -27,35 +35,31 @@ export function ProductForm({ product, onClose, onSaved }) {
     if (!file) return;
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const { data } = await api.post("/admin/upload", fd, {
-        headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
-      });
-      set("image_url", data.image_url);
-      toast.success("Gambar diunggah");
-    } catch (err) {
-      toast.error(formatApiErrorDetail(err.response?.data?.detail) || "Gagal mengunggah gambar");
+      const dataUrl = await fileToDataUrl(file);
+      set("image_url", dataUrl);
+      toast.success("Gambar ditambahkan");
+    } catch {
+      toast.error("Gagal memuat gambar");
     } finally {
       setUploading(false);
     }
   };
 
-  const submit = async (e) => {
+  const submit = (e) => {
     e.preventDefault();
     setSaving(true);
     try {
       const payload = { ...form, price: Number(form.price), stock: Number(form.stock) };
       if (product) {
-        await api.put(`/admin/products/${product.id}`, payload, { headers: authHeaders() });
+        store.updateProduct(product.id, payload);
         toast.success("Produk diperbarui");
       } else {
-        await api.post("/admin/products", payload, { headers: authHeaders() });
+        store.addProduct(payload);
         toast.success("Produk ditambahkan");
       }
       onSaved();
-    } catch (err) {
-      toast.error(formatApiErrorDetail(err.response?.data?.detail) || "Gagal menyimpan");
+    } catch {
+      toast.error("Gagal menyimpan");
     } finally {
       setSaving(false);
     }
@@ -125,7 +129,7 @@ export function ProductForm({ product, onClose, onSaved }) {
               <input ref={fileRef} type="file" accept="image/*" onChange={upload} className="hidden" data-testid="admin-image-file-input" />
               <button type="button" data-testid="admin-upload-button" onClick={() => fileRef.current?.click()} disabled={uploading} className="flex items-center gap-2 rounded-lg border border-slate-700 bg-[#161F2E] px-4 py-2.5 text-sm text-white hover:border-[#FF2E2E] transition-colors disabled:opacity-60">
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                {uploading ? "Mengunggah..." : "Unggah Gambar"}
+                {uploading ? "Memuat..." : "Unggah Gambar"}
               </button>
             </div>
           </div>
@@ -144,7 +148,7 @@ export function ProductForm({ product, onClose, onSaved }) {
 
         <div className="flex justify-end gap-3 mt-6">
           <button type="button" onClick={onClose} className="rounded-xl border border-slate-700 px-5 py-2.5 text-sm text-slate-300 hover:text-white transition-colors">Batal</button>
-          <button data-testid="admin-save-product-button" type="submit" disabled={saving} className="flex items-center gap-2 rounded-xl bg-[#FF2E2E] px-6 py-2.5 text-sm font-bold text-[#0A0D14] hover:brightness-110 transition-[filter] disabled:opacity-60">
+          <button data-testid="admin-save-product-button" type="submit" disabled={saving} className="flex items-center gap-2 rounded-xl bg-[#FF2E2E] px-6 py-2.5 text-sm font-bold text-white hover:brightness-110 transition-[filter] disabled:opacity-60">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {saving ? "Menyimpan..." : "Simpan"}
           </button>

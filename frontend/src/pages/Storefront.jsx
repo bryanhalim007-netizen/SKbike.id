@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
+import * as store from "../lib/store";
 import { Navbar } from "../components/Navbar";
 import { ProductCard } from "../components/ProductCard";
 import { WhatsAppPopout } from "../components/WhatsAppPopout";
 import { Search, Zap, ShieldCheck, Wrench, Truck, MapPin, ArrowDownWideNarrow, ArrowUpNarrowWide, Clock } from "lucide-react";
 
-const CATEGORIES = ["Semua", "Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik", "Road Bike", "Mini Trail", "Sepeda/Mobil Aki Anak"];
+const CATEGORIES = ["Semua", ...store.CATEGORIES];
 const SORT_OPTIONS = [
   { key: "newest", label: "Terbaru", icon: Clock },
   { key: "price_asc", label: "Murah - Mahal", icon: ArrowUpNarrowWide },
@@ -25,16 +25,10 @@ export default function Storefront() {
   const [category, setCategory] = useState("Semua");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
-  const [waNumber, setWaNumber] = useState("628125559681");
-  const [loading, setLoading] = useState(true);
+  const waNumber = store.getConfig().whatsapp_number;
 
   useEffect(() => {
-    api.get("/config").then(({ data }) => setWaNumber(data.whatsapp_number)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    api.get(`/products?sort=${sort}`).then(({ data }) => setProducts(data)).finally(() => setLoading(false));
+    setProducts(store.getProducts({ sort }));
   }, [sort]);
 
   const filtered = products.filter((p) => {
@@ -47,7 +41,6 @@ export default function Storefront() {
     <div className="min-h-screen bg-[#0A0D14]">
       <Navbar />
 
-      {/* Hero */}
       <section className="relative overflow-hidden border-b border-slate-800/80">
         <div className="absolute inset-0">
           <img src={HERO_IMG} alt="Sepeda" className="h-full w-full object-cover opacity-30" />
@@ -64,14 +57,13 @@ export default function Storefront() {
             <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
               Koleksi lengkap sepeda gunung, BMX, sepeda anak, sepeda lipat, dan sepeda listrik pilihan. Hubungi admin kami langsung via WhatsApp untuk info stok & harga terbaik.
             </p>
-            <a href="#katalog" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#FF2E2E] px-7 py-3.5 text-sm font-bold text-[#0A0D14] cyan-glow hover:scale-105 transition-transform">
+            <a href="#katalog" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#FF2E2E] px-7 py-3.5 text-sm font-bold text-white cyan-glow hover:scale-105 transition-transform">
               Jelajahi Katalog
             </a>
           </div>
         </div>
       </section>
 
-      {/* Perks */}
       <section id="keunggulan" className="border-b border-slate-800/80 bg-[#111723]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {PERKS.map((p, i) => (
@@ -88,7 +80,6 @@ export default function Storefront() {
         </div>
       </section>
 
-      {/* Catalog */}
       <section id="katalog" className="mx-auto max-w-7xl px-5 sm:px-8 py-16">
         <div id="kategori" className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
           <div>
@@ -151,9 +142,7 @@ export default function Storefront() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-20 text-slate-500">Memuat katalog...</div>
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="text-center py-20 text-slate-500">Tidak ada sepeda pada kategori ini.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

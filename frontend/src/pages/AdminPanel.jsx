@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { api, resolveImage, formatApiErrorDetail } from "../lib/api";
+import { resolveImage } from "../lib/api";
+import * as store from "../lib/store";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
 import {
@@ -31,7 +32,7 @@ function StatCard({ icon: Icon, label, value, testid }) {
 }
 
 export default function AdminPanel() {
-  const { user, logout, authHeaders } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [stats, setStats] = useState({ total_products: 0, total_categories: 0, in_stock: 0, inventory_value: 0 });
@@ -39,42 +40,27 @@ export default function AdminPanel() {
   const [editing, setEditing] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    try {
-      const [p, s] = await Promise.all([
-        api.get("/admin/products", { headers: authHeaders() }),
-        api.get("/admin/stats", { headers: authHeaders() }),
-      ]);
-      setProducts(p.data);
-      setStats(s.data);
-    } catch (e) {
-      if (e.response?.status === 401) navigate("/admin/login");
-    } finally {
-      setLoading(false);
-    }
-  }, [authHeaders, navigate]);
+  const load = useCallback(() => {
+    setProducts(store.getProducts({ sort: "newest" }));
+    setStats(store.getStats());
+  }, []);
 
   useEffect(() => {
-    if (user === false) navigate("/admin/login");
-    if (user) load();
+    if (!user) { navigate("/admin/login"); return; }
+    load();
   }, [user, load, navigate]);
 
   const onSaved = () => { setShowForm(false); setEditing(null); load(); };
 
-  const confirmDelete = async () => {
-    try {
-      await api.delete(`/admin/products/${deleteId}`, { headers: authHeaders() });
-      toast.success("Produk dihapus");
-      setDeleteId(null);
-      load();
-    } catch (e) {
-      toast.error(formatApiErrorDetail(e.response?.data?.detail) || "Gagal menghapus");
-    }
+  const confirmDelete = () => {
+    store.deleteProduct(deleteId);
+    toast.success("Produk dihapus");
+    setDeleteId(null);
+    load();
   };
 
-  if (user === null) return <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center text-slate-500">Memuat...</div>;
+  if (!user) return <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center text-slate-500">Memuat...</div>;
 
   const q = search.trim().toLowerCase();
   const filtered = q
@@ -87,7 +73,7 @@ export default function AdminPanel() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8 flex h-18 items-center justify-between py-4">
           <div className="flex items-center gap-2.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FF2E2E]">
-              <Bike className="h-6 w-6 text-[#0A0D14]" />
+              <Bike className="h-6 w-6 text-white" />
             </div>
             <div className="leading-none">
               <span className="font-heading text-lg font-extrabold text-white">SK BIKE Admin</span>
@@ -109,9 +95,9 @@ export default function AdminPanel() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white">Dashboard Produk</h1>
-            <p className="mt-1 text-slate-400 text-sm">Kelola daftar sepeda, harga, stok, dan spesifikasi.</p>
+            <p className="mt-1 text-slate-400 text-sm">Kelola daftar sepeda, harga, stok, dan spesifikasi. Data tersimpan lokal (offline).</p>
           </div>
-          <button data-testid="admin-add-product-button" onClick={() => { setEditing(null); setShowForm(true); }} className="flex items-center gap-2 rounded-full bg-[#FF2E2E] px-6 py-3 text-sm font-bold text-[#0A0D14] cyan-glow hover:scale-105 transition-transform">
+          <button data-testid="admin-add-product-button" onClick={() => { setEditing(null); setShowForm(true); }} className="flex items-center gap-2 rounded-full bg-[#FF2E2E] px-6 py-3 text-sm font-bold text-white cyan-glow hover:scale-105 transition-transform">
             <Plus className="h-4 w-4" /> Tambah Sepeda
           </button>
         </div>
@@ -151,9 +137,7 @@ export default function AdminPanel() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/70">
-                {loading ? (
-                  <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500">Memuat...</td></tr>
-                ) : filtered.length === 0 ? (
+                {filtered.length === 0 ? (
                   <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500">{products.length === 0 ? "Belum ada produk. Tambahkan sepeda pertama Anda." : "Tidak ada produk yang cocok dengan pencarian."}</td></tr>
                 ) : filtered.map((p) => (
                   <tr key={p.id} data-testid={`admin-product-row-${p.id}`} className="hover:bg-[#161F2E]/60 transition-colors">
