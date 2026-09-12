@@ -69,8 +69,8 @@ export default function Storefront() {
             <span className="inline-flex items-center gap-2 skew-tag bg-[#FF2E2E] px-6 py-2 text-xs font-mono-tech font-bold uppercase tracking-widest text-white">
               Sepeda &amp; Sepeda Listrik
             </span>
-            <h1 className="mt-6 font-heading text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight leading-[0.95] text-white uppercase italic">
-              Kendarai Batasmu.<br /><span className="text-[#FF2E2E]">Taklukan Medanmu.</span>
+            <h1 className="mt-6 font-heading text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight leading-[0.95] uppercase italic">
+              <span className="text-[#FF7A00]">Agen Resmi GODA Ketapang</span><br /><span className="text-[#FF2E2E]">Mencangkup Seluruh Area Kalimantan Barat</span>
             </h1>
             <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
               Koleksi lengkap sepeda gunung, BMX, sepeda anak, sepeda lipat, dan sepeda listrik pilihan. Hubungi admin kami langsung via WhatsApp untuk info stok & harga terbaik.
