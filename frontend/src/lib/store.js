@@ -115,6 +115,47 @@ export function deleteProduct(id) {
   write(read().filter((p) => p.id !== id));
 }
 
+// ---- Export / Import (offline data portability) ----
+export function exportData() {
+  return {
+    app: "SK Bike Store",
+    version: 1,
+    exported_at: new Date().toISOString(),
+    products: read(),
+  };
+}
+
+export function importData(payload, { mode = "replace" } = {}) {
+  let data = payload;
+  if (typeof payload === "string") {
+    try { data = JSON.parse(payload); } catch { return { ok: false, error: "File tidak valid (bukan JSON)." }; }
+  }
+  const incoming = Array.isArray(data) ? data : data && data.products;
+  if (!Array.isArray(incoming)) return { ok: false, error: "Format file tidak dikenali. Pastikan file ekspor SK Bike." };
+
+  const now = new Date().toISOString();
+  const clean = incoming
+    .filter((p) => p && p.name)
+    .map((p) => ({
+      ...p,
+      id: p.id || uid(),
+      price: Number(p.price) || 0,
+      stock: Number(p.stock) || 0,
+      created_at: p.created_at || now,
+      updated_at: now,
+    }));
+
+  if (mode === "merge") {
+    const list = read();
+    const byId = new Map(list.map((p) => [p.id, p]));
+    clean.forEach((p) => byId.set(p.id, { ...byId.get(p.id), ...p }));
+    write(Array.from(byId.values()));
+  } else {
+    write(clean);
+  }
+  return { ok: true, count: clean.length };
+}
+
 // ---- Auth (local, offline-by-design) ----
 // NOTE: This is a fully offline PWA (user requirement: 100% no server). There is no
 // backend to issue httpOnly cookies, so the session flag is kept in localStorage.
