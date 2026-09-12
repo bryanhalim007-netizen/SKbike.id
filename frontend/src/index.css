@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #0A0D14;
+    color: #CBD5E1;
+}
+
+@layer base {
+    :root {
+        --background: 222 40% 6%;
+        --foreground: 210 40% 96%;
+        --card: 218 30% 13%;
+        --card-foreground: 210 40% 96%;
+        --popover: 220 34% 9%;
+        --popover-foreground: 210 40% 96%;
+        --primary: 0 90% 55%;
+        --primary-foreground: 222 47% 6%;
+        --secondary: 218 30% 16%;
+        --secondary-foreground: 210 40% 96%;
+        --muted: 218 25% 18%;
+        --muted-foreground: 215 20% 55%;
+        --accent: 0 90% 55%;
+        --accent-foreground: 222 47% 6%;
+        --destructive: 0 72% 51%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 218 25% 20%;
+        --input: 218 25% 18%;
+        --ring: 0 90% 55%;
+        --radius: 0.5rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+.font-heading { font-family: 'Outfit', sans-serif; }
+.font-mono-tech { font-family: 'JetBrains Mono', monospace; }
+
+::selection { background: #FF2E2E; color: #0A0D14; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0A0D14; }
+::-webkit-scrollbar-thumb { background: #1C273A; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #FF2E2E; }
+
+.glass {
+    backdrop-filter: blur(18px);
+    background: rgba(10, 13, 20, 0.75);
+}
+
+.cyan-glow { box-shadow: 0 0 24px rgba(255, 46, 46, 0.35); }
+.wa-glow { box-shadow: 0 0 22px rgba(37, 211, 102, 0.5); }
+
+.grid-texture {
+    background-image:
+        linear-gradient(rgba(255, 46, 46, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 46, 46, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+}
+
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.6s ease-out both; }
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    70% { transform: scale(1.5); opacity: 0; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+.pulse-ring { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }

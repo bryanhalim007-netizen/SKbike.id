@@ -1,0 +1,169 @@
+{
+  "project_info": {
+    "name": "VELOX BIKE & E-BIKE CATALOG STOREFRONT",
+    "language": "Indonesian (Bahasa Indonesia)",
+    "app_type": "hybrid_fullstack (e-commerce catalog storefront + admin dashboard)",
+    "theme": "Dark Sporty / Performance Pro Archetype",
+    "description": "Premium bicycle and electric bike catalog featuring Sepeda Gunung, BMX, Sepeda Anak, Sepeda Lipat, and Sepeda Listrik with custom WhatsApp inquiry pop-out, price-hidden storefront, and comprehensive Admin Panel."
+  },
+  "design_archetype": {
+    "name": "ARCHETYPE 2: THE PERFORMANCE PRO & SPORTY TACTICAL MINIMALISM",
+    "vibe": "High-velocity tactical athletic feel, precision engineered, dark obsidian background, electric cyan/neon accents, razor-sharp card surfaces, dynamic energy.",
+    "rules": [
+      "Storefront displays NO PRICES on product cards or details (prices managed only in Admin Panel).",
+      "Storefront action buttons trigger direct WhatsApp pop-out inquiry with pre-filled product name and specs.",
+      "All text content, labels, specs, and status badges MUST be in Indonesian (Bahasa Indonesia).",
+      "Floating pop-out WhatsApp button on bottom-right corner with interactive quick-inquiry window.",
+      "Admin Panel with full CRUD operations for bicycle management (including Price management, stock, specs, and image upload/URL)."
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Outfit, Barlow Condensed, sans-serif (Heavyweight athletic & sporty display)",
+      "body": "Plus Jakarta Sans, Inter, sans-serif (Clean high-legibility geometric sans)",
+      "mono": "JetBrains Mono, monospace (For specs, serial codes, and technical badges)"
+    },
+    "scale": {
+      "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight",
+      "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
+      "h3_card": "text-lg sm:text-xl font-semibold tracking-wide",
+      "body": "text-base font-normal leading-relaxed text-slate-300",
+      "caption": "text-xs font-medium tracking-wider uppercase text-slate-400"
+    }
+  },
+  "color_palette": {
+    "background": {
+      "primary": "#0A0D14",
+      "secondary": "#111723",
+      "card": "#161F2E",
+      "card_hover": "#1C273A",
+      "overlay": "rgba(10, 13, 20, 0.85)"
+    },
+    "accents": {
+      "primary_cyan": "#00F0FF",
+      "primary_glow": "rgba(0, 240, 255, 0.2)",
+      "neon_volt": "#10B981",
+      "electric_orange": "#FF5500",
+      "whatsapp_green": "#25D366"
+    },
+    "text": {
+      "heading": "#FFFFFF",
+      "body": "#CBD5E1",
+      "muted": "#64748B",
+      "accent": "#00F0FF"
+    },
+    "borders": {
+      "default": "rgba(255, 255, 255, 0.08)",
+      "hover": "rgba(0, 240, 255, 0.4)",
+      "active": "#00F0FF"
+    }
+  },
+  "image_urls": {
+    "hero_banner": "https://images.unsplash.com/photo-1535369643553-a33e0d1ac81d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHw0fHxtb3VudGFpbiUyMGJpa2UlMjBiaWN5Y2xlJTIwYWN0aW9uJTIwY3ljbGluZ3xlbnwwfHx8fDE3ODkxOTYxMjJ8MA&ixlib=rb-4.1.0&q=85",
+    "sepeda_gunung": [
+      "https://images.unsplash.com/photo-1621122940876-2b3be129159c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHxtb3VudGFpbiUyMGJpa2UlMjBiaWN5Y2xlJTIwYWN0aW9uJTIwY3ljbGluZ3xlbnwwfHx8fDE3ODkxOTYxMjJ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1606087492572-424ebe0f2f61?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwyfHxtb3VudGFpbiUyMGJpa2UlMjBiaWN5Y2xlJTIwYWN0aW9uJTIwY3ljbGluZ3xlbnwwfHx8fDE3ODkxOTYxMjJ8MA&ixlib=rb-4.1.0&q=85"
+    ],
+    "bmx": [
+      "https://images.unsplash.com/photo-1594015197353-373334c20904?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwyfHxCTVglMjByaWRlciUyMHRyaWNrfGVufDB8fHx8MTc4NzcyMzIyOHww&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/flagged/photo-1553677969-1d67bbe9d55a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHxCTVglMjByaWRlciUyMHRyaWNrfGVufDB8fHx8MTc4NzcyMzIyOHww&ixlib=rb-4.1.0&q=85"
+    ],
+    "sepeda_listrik": [
+      "https://images.unsplash.com/photo-1571068316344-75bc76f77890?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080",
+      "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080"
+    ],
+    "sepeda_lipat": [
+      "https://images.unsplash.com/photo-1485965120184-e220f721d03e?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080"
+    ],
+    "sepeda_anak": [
+      "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080"
+    ]
+  },
+  "key_features_and_components": {
+    "header_nav": {
+      "brand": "VELOX BIKE STUDIO",
+      "links": ["Katalog", "Kategori", "Keunggulan", "Hubungi Kami", "Admin Panel"],
+      "search_bar": "Live filter bike catalog search in Indonesian",
+      "glassmorphism": "backdrop-blur-xl bg-[#0A0D14]/80 border-b border-slate-800/80 sticky top-0 z-40"
+    },
+    "categories": [
+      "Semua",
+      "Sepeda Gunung",
+      "BMX",
+      "Sepeda Anak",
+      "Sepeda Lipat",
+      "Sepeda Listrik"
+    ],
+    "product_card_storefront": {
+      "price_visibility": "HIDDEN (User Choice Enforced)",
+      "displayed_fields": [
+        "Gambar Produk",
+        "Kategori Badge (e.g., Sepeda Listrik)",
+        "Nama Produk (e.g., Velox Trail Pro E-Bike 750W)",
+        "Status Stok (Tersedia / Stok Terbatas / Inden)",
+        "Spesifikasi Kunci (Bahan Frame, Transmisi, Baterai/Ukuran Ban)",
+        "Deskripsi Ringkas",
+        "Tombol Tanya via WhatsApp (Direct chat with pre-filled message)",
+        "Tombol Detail Spesifikasi (Opens detail modal)"
+      ]
+    },
+    "whatsapp_popout": {
+      "type": "Floating WhatsApp Contact Widget",
+      "position": "Fixed bottom-6 right-6 z-50",
+      "features": [
+        "Floating green glow button with WhatsApp Icon and pulsing online indicator",
+        "Pop-out conversation drawer/modal when clicked",
+        "Quick options: 'Tanya Stok & Harga', 'Konsultasi Garansi', 'Jadwal Test Ride', 'Tanya Sepeda Listrik'",
+        "Direct link trigger to https://wa.me/6281234567890 with custom URL encoded text"
+      ]
+    },
+    "admin_panel": {
+      "access": "Admin Login Modal / Route (/admin)",
+      "default_credentials_hint": "admin / admin123",
+      "features": [
+        "Product Dashboard Stats (Total Sepeda, Total Kategori, Stok Tersedia, Total Nilai Inventaris)",
+        "Full CRUD Operations (Tambah Sepeda Baru, Edit Sepeda, Hapus Sepeda)",
+        "Price Management (Harga HET / Rp) only editable & visible in Admin Panel",
+        "Category selector (Sepeda Gunung, BMX, Sepeda Anak, Sepeda Lipat, Sepeda Listrik)",
+        "Image URL input + live preview / preset sports bicycle gallery selector",
+        "Specifications editor (Frame, Groupset/Transmisi, Rem, Ukuran Roda, Baterai/Motor for E-Bike)",
+        "Stock quantity counter & availability status toggle"
+      ]
+    }
+  },
+  "data_testid_conventions": {
+    "nav_logo": "nav-logo",
+    "nav_catalog_link": "nav-catalog-link",
+    "nav_admin_btn": "nav-admin-button",
+    "search_input": "catalog-search-input",
+    "category_tab": "category-filter-tab-{category_slug}",
+    "product_card": "product-card-{product_id}",
+    "product_title": "product-title-{product_id}",
+    "product_category": "product-category-{product_id}",
+    "product_specs": "product-specs-{product_id}",
+    "product_stock": "product-stock-{product_id}",
+    "btn_wa_inquire": "btn-wa-inquire-{product_id}",
+    "btn_product_detail": "btn-product-detail-{product_id}",
+    "floating_wa_button": "floating-whatsapp-trigger",
+    "wa_popout_modal": "whatsapp-popout-modal",
+    "admin_login_form": "admin-login-form",
+    "admin_username_input": "admin-username-input",
+    "admin_password_input": "admin-password-input",
+    "admin_login_submit": "admin-login-submit-button",
+    "admin_add_product_btn": "admin-add-product-button",
+    "admin_product_row": "admin-product-row-{product_id}",
+    "admin_price_input": "admin-price-input",
+    "admin_save_product_btn": "admin-save-product-button"
+  },
+  "instructions_to_main_agent": [
+    "1. Read this guidelines file carefully and initialize the backend API + React storefront.",
+    "2. Ensure all UI text is strictly in Indonesian (Bahasa Indonesia).",
+    "3. ABSOLUTELY DO NOT SHOW PRICES on storefront product cards or storefront product detail modals. Prices MUST only exist in Admin Panel.",
+    "4. Storefront product cards must show: Image, Category badge, Title, Stock status badge, Specifications preview (e.g. Frame Aluminum Alloy, Shimano 12-Speed), Description, 'Detail Specs' button, and 'Tanya via WhatsApp' primary button.",
+    "5. Implement floating WhatsApp pop-out widget at fixed bottom-right with animation, pre-filled inquiry generator, and direct WhatsApp redirect.",
+    "6. Build Admin Panel with login authentication simulation, comprehensive bike catalog table (showing Price in Rp, Stock, Specs, Actions), and Modal form for Add/Edit/Delete bike items.",
+    "7. Include default seed data with 8-10 high quality bikes across all 5 categories (Sepeda Gunung, BMX, Sepeda Anak, Sepeda Lipat, Sepeda Listrik) so catalog is rich out-of-the-box.",
+    "8. Ensure dark sporty theme styling with Tailwind CSS, high contrast text, cyan glow accents, crisp card borders, and smooth Sonner toast notifications."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": "  - You tend to converge toward generic, \"on distribution\" outputs. In frontend design, this creates what users call the \"AI slop\" aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.\n    - Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients    \n\t- Don't make generic centered layouts, simplistic gradients, and uniform styling.\n    - Create depth through layered design elements with z-index hierarchy\n    - Use glass-morphism effects with backdrop filters (12-24px blur)   \n    - You MUST NOT apply universal transition. Eg: `transition: all`. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms\n    \n    - You MUST NOT center align the app container, ie do not add `.App { text-align: center; }` in the css file. This disrupts the human natural reading flow of text\n    \n    - Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style\n\n   - NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 etc for icons. \n\n- Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.    \n- Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.\n- Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.\n- Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN\n\n**Component Reuse:**\n\t- Prioritize using pre-existing components from src/components/ui when applicable\n\t- Create new components that match the style and conventions of existing components when needed\n\t- Examine existing components to understand the project's component patterns before creating new ones\n\n**Toasts:**\n  - Use `sonner` for toasts\"\n  - Sonner component are located in `/app/src/components/ui/sonner.tsx`"
+}
