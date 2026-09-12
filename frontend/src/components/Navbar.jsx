@@ -28,6 +28,15 @@ export function Navbar() {
           <nav className="hidden md:flex items-center gap-9 text-sm font-semibold uppercase tracking-wide text-slate-300">
             <a href="#katalog" data-testid="nav-catalog-link" className="nav-link hover:text-white transition-colors">Katalog</a>
             <a href="#find-us" data-testid="nav-findus-link" className="nav-link hover:text-white transition-colors">Find Us</a>
+            <a
+              href={`https://wa.me/628125559681?text=${encodeURIComponent("Halo Saya ingin Menjadi Reseller SK Bike")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="nav-reseller-link"
+              className="nav-link text-[#FF2E2E] hover:text-white transition-colors"
+            >
+              Daftar Menjadi Reseller
+            </a>
           </nav>
 
           <div className="flex items-center gap-2">
