@@ -19,7 +19,10 @@ export function Navbar() {
             className="flex items-center gap-2.5 group"
           >
             <img src={skLogo} alt="SK Bike Store" className="h-9 sm:h-11 w-auto rounded-md" />
-            <span className="block text-[10px] uppercase tracking-[0.3em] text-[#FF2E2E]">Bike Store</span>
+            <span className="flex flex-col leading-none">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-[#FF2E2E]">Bike Store</span>
+              <span className="text-[9px] uppercase tracking-[0.25em] text-slate-400">Since 2020</span>
+            </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-9 text-sm font-semibold uppercase tracking-wide text-slate-300">

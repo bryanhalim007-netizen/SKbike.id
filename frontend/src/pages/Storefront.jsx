@@ -70,7 +70,7 @@ export default function Storefront() {
               Sepeda &amp; Sepeda Listrik
             </span>
             <h1 className="mt-6 font-heading text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight leading-[0.95] uppercase italic">
-              <span className="text-[#FF7A00]">Agen Resmi GODA Ketapang</span><br /><span className="text-[#FF2E2E]">Mencangkup Seluruh Area Kalimantan Barat</span>
+              <span className="text-[#FF7A00]">Agen Resmi GODA Ketapang</span><br /><span className="text-[#FF2E2E]">Siap Antar Area Kalimantan Barat</span>
             </h1>
             <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
               Koleksi lengkap sepeda gunung, BMX, sepeda anak, sepeda lipat, dan sepeda listrik pilihan. Hubungi admin kami langsung via WhatsApp untuk info stok & harga terbaik.
@@ -280,7 +280,7 @@ export default function Storefront() {
           <p className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-200">
             <MapPin className="h-4 w-4 text-[#FF2E2E]" /> Jl Pawan 1, Ketapang, Kalimantan Barat
           </p>
-          <p className="mt-4 text-xs text-slate-600">© 2026 SK BIKE. Semua hak dilindungi.</p>
+          <p className="mt-4 text-xs text-slate-600">© 2020 SK BIKE. Semua hak dilindungi.</p>
         </div>
       </footer>
 
