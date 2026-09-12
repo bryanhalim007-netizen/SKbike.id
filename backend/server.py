@@ -197,11 +197,17 @@ async def get_config():
     return {"whatsapp_number": WHATSAPP_NUMBER, "categories": CATEGORIES}
 
 @api_router.get("/products")
-async def list_products(category: Optional[str] = None):
+async def list_products(category: Optional[str] = None, sort: Optional[str] = None):
     q = {}
     if category and category != "Semua":
         q["category"] = category
-    docs = await db.products.find(q).sort("created_at", -1).to_list(1000)
+    if sort == "price_asc":
+        sort_spec = [("price", 1)]
+    elif sort == "price_desc":
+        sort_spec = [("price", -1)]
+    else:
+        sort_spec = [("created_at", -1)]
+    docs = await db.products.find(q).sort(sort_spec).to_list(1000)
     return [product_public(d) for d in docs]
 
 @api_router.get("/products/image/{path:path}")

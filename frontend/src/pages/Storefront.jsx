@@ -3,9 +3,14 @@ import { api } from "../lib/api";
 import { Navbar } from "../components/Navbar";
 import { ProductCard } from "../components/ProductCard";
 import { WhatsAppPopout } from "../components/WhatsAppPopout";
-import { Search, Zap, ShieldCheck, Wrench, Truck, MapPin } from "lucide-react";
+import { Search, Zap, ShieldCheck, Wrench, Truck, MapPin, ArrowDownWideNarrow, ArrowUpNarrowWide, Clock } from "lucide-react";
 
 const CATEGORIES = ["Semua", "Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik"];
+const SORT_OPTIONS = [
+  { key: "newest", label: "Terbaru", icon: Clock },
+  { key: "price_asc", label: "Murah - Mahal", icon: ArrowUpNarrowWide },
+  { key: "price_desc", label: "Mahal - Murah", icon: ArrowDownWideNarrow },
+];
 const HERO_IMG = "https://images.unsplash.com/photo-1535369643553-a33e0d1ac81d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHw0fHxtb3VudGFpbiUyMGJpa2UlMjBiaWN5Y2xlJTIwYWN0aW9uJTIwY3ljbGluZ3xlbnwwfHx8fDE3ODkxOTYxMjJ8MA&ixlib=rb-4.1.0&q=85";
 
 const PERKS = [
@@ -19,6 +24,7 @@ export default function Storefront() {
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState("Semua");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("newest");
   const [waNumber, setWaNumber] = useState("628125559681");
   const [loading, setLoading] = useState(true);
 
@@ -28,8 +34,8 @@ export default function Storefront() {
 
   useEffect(() => {
     setLoading(true);
-    api.get("/products").then(({ data }) => setProducts(data)).finally(() => setLoading(false));
-  }, []);
+    api.get(`/products?sort=${sort}`).then(({ data }) => setProducts(data)).finally(() => setLoading(false));
+  }, [sort]);
 
   const filtered = products.filter((p) => {
     const matchCat = category === "Semua" || p.category === category;
@@ -101,25 +107,48 @@ export default function Storefront() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2.5 mb-10">
-          {CATEGORIES.map((cat) => {
-            const slug = cat.toLowerCase().replace(/\s+/g, "-");
-            const active = category === cat;
-            return (
-              <button
-                key={cat}
-                data-testid={`category-filter-tab-${slug}`}
-                onClick={() => setCategory(cat)}
-                className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-colors border ${
-                  active
-                    ? "bg-[#FF2E2E] text-[#0A0D14] border-[#FF2E2E] cyan-glow"
-                    : "bg-[#161F2E] text-slate-300 border-slate-700 hover:border-[#FF2E2E]/50"
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10">
+          <div className="flex flex-wrap gap-2.5">
+            {CATEGORIES.map((cat) => {
+              const slug = cat.toLowerCase().replace(/\s+/g, "-");
+              const active = category === cat;
+              return (
+                <button
+                  key={cat}
+                  data-testid={`category-filter-tab-${slug}`}
+                  onClick={() => setCategory(cat)}
+                  className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-colors border ${
+                    active
+                      ? "bg-[#FF2E2E] text-white border-[#FF2E2E] cyan-glow"
+                      : "bg-[#161F2E] text-slate-300 border-slate-700 hover:border-[#FF2E2E]/50"
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs uppercase tracking-wider text-slate-500 mr-1">Urutkan</span>
+            {SORT_OPTIONS.map((opt) => {
+              const active = sort === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  data-testid={`sort-option-${opt.key}`}
+                  onClick={() => setSort(opt.key)}
+                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors border ${
+                    active
+                      ? "bg-[#FF2E2E] text-white border-[#FF2E2E]"
+                      : "bg-[#161F2E] text-slate-300 border-slate-700 hover:border-[#FF2E2E]/50"
+                  }`}
+                >
+                  <opt.icon className="h-3.5 w-3.5" /> {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {loading ? (

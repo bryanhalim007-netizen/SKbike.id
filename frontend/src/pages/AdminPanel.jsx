@@ -4,7 +4,7 @@ import { api, resolveImage, formatApiErrorDetail } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
 import {
-  Bike, LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink,
+  Bike, LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -38,6 +38,7 @@ export default function AdminPanel() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -74,6 +75,11 @@ export default function AdminPanel() {
   };
 
   if (user === null) return <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center text-slate-500">Memuat...</div>;
+
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? products.filter((p) => p.name.toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q))
+    : products;
 
   return (
     <div className="min-h-screen bg-[#0A0D14]">
@@ -117,6 +123,19 @@ export default function AdminPanel() {
           <StatCard icon={Wallet} label="Nilai Inventaris" value={rupiah(stats.inventory_value)} testid="stat-inventory-value" />
         </div>
 
+        <div className="mb-4">
+          <div className="relative max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <input
+              data-testid="admin-search-input"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari berdasarkan kode / nama barang..."
+              className="w-full rounded-full border border-slate-700 bg-[#161F2E] pl-11 pr-4 py-3 text-sm text-white outline-none focus:border-[#FF2E2E] transition-colors"
+            />
+          </div>
+        </div>
+
         <div className="rounded-2xl border border-slate-800 bg-[#111723] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -134,9 +153,9 @@ export default function AdminPanel() {
               <tbody className="divide-y divide-slate-800/70">
                 {loading ? (
                   <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500">Memuat...</td></tr>
-                ) : products.length === 0 ? (
-                  <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500">Belum ada produk. Tambahkan sepeda pertama Anda.</td></tr>
-                ) : products.map((p) => (
+                ) : filtered.length === 0 ? (
+                  <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500">{products.length === 0 ? "Belum ada produk. Tambahkan sepeda pertama Anda." : "Tidak ada produk yang cocok dengan pencarian."}</td></tr>
+                ) : filtered.map((p) => (
                   <tr key={p.id} data-testid={`admin-product-row-${p.id}`} className="hover:bg-[#161F2E]/60 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
