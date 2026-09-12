@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Bike, ShieldCheck } from "lucide-react";
+import { InstallPWA } from "./InstallPWA";
 
 export function Navbar() {
   return (
@@ -22,13 +23,16 @@ export function Navbar() {
             <a href="#keunggulan" className="nav-link hover:text-white transition-colors">Keunggulan</a>
           </nav>
 
-          <Link
-            to="/admin/login"
-            data-testid="nav-admin-button"
-            className="flex items-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-2 text-sm font-semibold text-white hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors"
-          >
-            <ShieldCheck className="h-4 w-4" /> Admin Panel
-          </Link>
+          <div className="flex items-center gap-2">
+            <InstallPWA />
+            <Link
+              to="/admin/login"
+              data-testid="nav-admin-button"
+              className="flex items-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-2 text-sm font-semibold text-white hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors"
+            >
+              <ShieldCheck className="h-4 w-4" /> <span className="hidden sm:inline">Admin Panel</span><span className="sm:hidden">Admin</span>
+            </Link>
+          </div>
         </div>
       </div>
     </header>
