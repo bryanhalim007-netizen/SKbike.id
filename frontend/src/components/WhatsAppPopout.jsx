@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { MessageCircle, X, Send, Package, ShieldCheck, CalendarClock, Zap, Bike } from "lucide-react";
+import { MessageCircle, X, Send, Package, ShieldCheck, Zap, Bike } from "lucide-react";
 
 const QUICK_OPTIONS = [
   { icon: Package, label: "Tanya Stok & Harga", desc: "Cek ketersediaan sepeda", message: "Halo Admin SK Bike, saya ingin tanya stok & harga sepeda." },
-  { icon: ShieldCheck, label: "Konsultasi Garansi", desc: "Info klaim & jaminan", message: "Halo, saya mau konsultasi garansi produk." },
-  { icon: CalendarClock, label: "Jadwal Test Ride", desc: "Coba sebelum beli", message: "Halo, saya ingin menjadwalkan test ride." },
+  { icon: ShieldCheck, label: "Konsultasi Service", desc: "Info servis & perbaikan", message: "Halo, saya mau konsultasi service sepeda." },
   { icon: Zap, label: "Sepeda Listrik", desc: "Tanya E-Bike SK Bike", message: "Halo, saya tertarik dengan sepeda listrik SK Bike." },
 ];
 
