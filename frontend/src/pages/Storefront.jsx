@@ -51,7 +51,8 @@ export default function Storefront() {
       <section className="relative overflow-hidden border-b border-slate-800/80">
         <div className="absolute inset-0">
           <img src={HERO_IMG} alt="Sepeda" className="h-full w-full object-cover opacity-30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0D14] via-[#0A0D14]/90 to-[#0A0D14]/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0D14] via-[#0A0D14]/90 to-[#0A0D14]/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14] via-[#0A0D14]/30 to-transparent sm:hidden" />
           <div className="absolute inset-0 speed-lines opacity-40" />
           <div className="absolute -right-1/4 top-0 h-full w-1/2 red-beam animate-glow hidden sm:block" />
         </div>
@@ -76,7 +77,7 @@ export default function Storefront() {
               <span className="text-sm text-slate-400">atau chat admin via WhatsApp</span>
             </div>
 
-            <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 border-t border-slate-800/80 pt-6">
+            <div className="mt-10 flex flex-wrap gap-x-6 sm:gap-x-10 gap-y-4 border-t border-slate-800/80 pt-6">
               {HERO_STATS.map((s) => (
                 <div key={s.label}>
                   <p className="font-heading text-2xl sm:text-3xl font-black text-white italic">{s.value}{s.plus && <span className="text-[#FF2E2E]">+</span>}</p>
