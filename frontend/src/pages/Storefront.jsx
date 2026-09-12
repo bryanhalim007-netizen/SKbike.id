@@ -70,7 +70,7 @@ export default function Storefront() {
               Sepeda &amp; Sepeda Listrik
             </span>
             <h1 className="mt-6 font-heading text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight leading-[0.95] uppercase italic">
-              <span className="text-[#FF7A00]">Toko Sepeda Ketapang</span><br /><span className="text-[#FF2E2E]">Siap Antar Area Kalimantan Barat</span>
+              <span className="text-white">Toko Sepeda Ketapang</span><br /><span className="text-[#FF2E2E]">Siap Antar Area Kalimantan Barat</span>
             </h1>
             <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
               Koleksi lengkap sepeda gunung, BMX, sepeda anak, sepeda lipat, dan sepeda listrik pilihan. Hubungi admin kami langsung via WhatsApp untuk info stok & harga terbaik.

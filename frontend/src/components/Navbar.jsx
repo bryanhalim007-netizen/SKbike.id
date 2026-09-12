@@ -33,8 +33,9 @@ export function Navbar() {
               target="_blank"
               rel="noopener noreferrer"
               data-testid="nav-reseller-link"
-              className="nav-link text-[#FF2E2E] hover:text-white transition-colors"
+              className="nav-link beep flex items-center gap-2 text-[#FF2E2E] hover:text-white transition-colors"
             >
+              <span className="beep-dot h-2 w-2 rounded-full bg-[#FF2E2E]" />
               Daftar Menjadi Reseller
             </a>
           </nav>
