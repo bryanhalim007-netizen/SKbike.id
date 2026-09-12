@@ -5,7 +5,7 @@ import { ProductCard } from "../components/ProductCard";
 import { WhatsAppPopout } from "../components/WhatsAppPopout";
 import { Search, Zap, ShieldCheck, Wrench, Truck, MapPin, ArrowDownWideNarrow, ArrowUpNarrowWide, Clock } from "lucide-react";
 
-const CATEGORIES = ["Semua", "Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik"];
+const CATEGORIES = ["Semua", "Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik", "Road Bike"];
 const SORT_OPTIONS = [
   { key: "newest", label: "Terbaru", icon: Clock },
   { key: "price_asc", label: "Murah - Mahal", icon: ArrowUpNarrowWide },

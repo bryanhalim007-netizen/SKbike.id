@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const CATEGORIES = ["Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik"];
+const CATEGORIES = ["Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik", "Road Bike"];
 const STATUSES = ["Tersedia", "Stok Terbatas", "Inden"];
 
 const EMPTY = {
