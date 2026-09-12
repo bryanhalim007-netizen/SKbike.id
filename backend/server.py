@@ -126,6 +126,7 @@ class Specs(BaseModel):
 
 class ProductCreate(BaseModel):
     name: str
+    code: str = ""
     category: str
     description: str = ""
     price: float = 0
@@ -136,6 +137,7 @@ class ProductCreate(BaseModel):
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
+    code: Optional[str] = None
     category: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
@@ -159,6 +161,7 @@ def product_public(doc: dict) -> dict:
 def product_admin(doc: dict) -> dict:
     pub = product_public(doc)
     pub["price"] = doc.get("price", 0)
+    pub["code"] = doc.get("code", "")
     return pub
 
 # ---------------- Auth routes ----------------

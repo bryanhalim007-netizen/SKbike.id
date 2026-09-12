@@ -123,6 +123,7 @@ export default function AdminPanel() {
               <thead>
                 <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wider text-slate-500">
                   <th className="px-5 py-4 font-medium">Sepeda</th>
+                  <th className="px-5 py-4 font-medium">Kode</th>
                   <th className="px-5 py-4 font-medium">Kategori</th>
                   <th className="px-5 py-4 font-medium">Harga</th>
                   <th className="px-5 py-4 font-medium">Stok</th>
@@ -132,9 +133,9 @@ export default function AdminPanel() {
               </thead>
               <tbody className="divide-y divide-slate-800/70">
                 {loading ? (
-                  <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-500">Memuat...</td></tr>
+                  <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500">Memuat...</td></tr>
                 ) : products.length === 0 ? (
-                  <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-500">Belum ada produk. Tambahkan sepeda pertama Anda.</td></tr>
+                  <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500">Belum ada produk. Tambahkan sepeda pertama Anda.</td></tr>
                 ) : products.map((p) => (
                   <tr key={p.id} data-testid={`admin-product-row-${p.id}`} className="hover:bg-[#161F2E]/60 transition-colors">
                     <td className="px-5 py-4">
@@ -145,6 +146,7 @@ export default function AdminPanel() {
                         <span className="font-medium text-white">{p.name}</span>
                       </div>
                     </td>
+                    <td className="px-5 py-4 font-mono-tech text-slate-300">{p.code || "-"}</td>
                     <td className="px-5 py-4 text-slate-400">{p.category}</td>
                     <td className="px-5 py-4 text-[#FF2E2E] font-mono-tech">{rupiah(p.price)}</td>
                     <td className="px-5 py-4 text-slate-300">{p.stock}</td>

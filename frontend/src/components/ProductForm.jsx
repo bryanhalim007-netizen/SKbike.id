@@ -8,7 +8,7 @@ const CATEGORIES = ["Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepe
 const STATUSES = ["Tersedia", "Stok Terbatas", "Inden"];
 
 const EMPTY = {
-  name: "", category: "Sepeda Gunung", description: "", price: 0, stock: 0, status: "Tersedia", image_url: "",
+  name: "", code: "", category: "Sepeda Gunung", description: "", price: 0, stock: 0, status: "Tersedia", image_url: "",
   specs: { frame: "", transmisi: "", rem: "", ukuran_roda: "", baterai_motor: "" },
 };
 
@@ -77,9 +77,14 @@ export function ProductForm({ product, onClose, onSaved }) {
         <h2 className="font-heading text-xl font-bold text-white mb-5">{product ? "Edit Sepeda" : "Tambah Sepeda Baru"}</h2>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
+          <div>
             <label className="block text-xs uppercase tracking-wider text-slate-400 mb-1.5">Nama Sepeda</label>
             <input data-testid="admin-name-input" required value={form.name} onChange={(e) => set("name", e.target.value)} className={field} />
+          </div>
+
+          <div>
+            <label className="block text-xs uppercase tracking-wider text-slate-400 mb-1.5">Kode Barang</label>
+            <input data-testid="admin-code-input" placeholder="cth: MTB-001" value={form.code} onChange={(e) => set("code", e.target.value)} className={field} />
           </div>
 
           <div>
