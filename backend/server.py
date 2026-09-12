@@ -115,7 +115,7 @@ def get_object(path: str):
     return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
 
 # ---------------- Models ----------------
-CATEGORIES = ["Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik", "Road Bike"]
+CATEGORIES = ["Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik", "Road Bike", "Mini Trail", "Sepeda/Mobil Aki Anak"]
 
 class Specs(BaseModel):
     frame: Optional[str] = ""
