@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageCircle, X, Send, Package, ShieldCheck, Zap, Bike } from "lucide-react";
+import { MessageCircle, X, Send, Package, ShieldCheck, Zap, Bike, Instagram } from "lucide-react";
 
 const QUICK_OPTIONS = [
   { icon: Package, label: "Tanya Stok & Harga", desc: "Cek ketersediaan sepeda", message: "Halo Admin SK Bike, saya ingin tanya stok & harga sepeda." },
@@ -108,6 +108,21 @@ export function WhatsAppPopout({ number }) {
           </div>
         </div>
       )}
+
+      <div className="mb-3 flex items-center gap-3">
+        <span className="hidden sm:block rounded-full bg-[#111723] border border-slate-700/60 px-4 py-2 text-sm font-medium text-white shadow-lg">@skbike_ketapang</span>
+        <a
+          href="https://instagram.com/skbike_ketapang"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="floating-instagram-trigger"
+          className="flex h-16 w-16 items-center justify-center rounded-full text-white hover:scale-110 transition-transform"
+          style={{ background: "linear-gradient(45deg, #F58529, #DD2A7B, #8134AF, #515BD4)", boxShadow: "0 0 22px rgba(221, 42, 123, 0.5)" }}
+          aria-label="Kunjungi Instagram SK Bike"
+        >
+          <Instagram className="h-8 w-8" />
+        </a>
+      </div>
 
       <div className="flex items-center gap-3">
         {!open && (
