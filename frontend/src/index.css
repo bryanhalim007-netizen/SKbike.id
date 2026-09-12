@@ -151,3 +151,13 @@ body {
 .beep-dot {
     animation: beepDot 2s ease-out infinite;
 }
+
+/* Subtle ripple pulse for primary CTA */
+@keyframes rippleSoft {
+    0% { box-shadow: 0 0 0 0 rgba(255, 46, 46, 0.35); }
+    70% { box-shadow: 0 0 0 12px rgba(255, 46, 46, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 46, 46, 0); }
+}
+.ripple-soft {
+    animation: rippleSoft 2.4s ease-out infinite;
+}

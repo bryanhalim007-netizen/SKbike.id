@@ -76,7 +76,7 @@ export default function Storefront() {
               Koleksi lengkap sepeda gunung, BMX, sepeda anak, sepeda lipat, dan sepeda listrik pilihan. Hubungi admin kami langsung via WhatsApp untuk info stok & harga terbaik.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <a href="#katalog" className="group inline-flex items-center gap-2 skew-tag bg-[#FF2E2E] px-8 py-4 text-sm font-bold uppercase tracking-wide text-white cyan-glow hover:scale-105 transition-transform">
+              <a href="#katalog" className="ripple-soft group inline-flex items-center gap-2 skew-tag bg-[#FF2E2E] px-8 py-4 text-sm font-bold uppercase tracking-wide text-white cyan-glow hover:scale-105 transition-transform">
                 Jelajahi Katalog <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </a>
               <span className="text-sm text-slate-400">atau chat admin via WhatsApp</span>
