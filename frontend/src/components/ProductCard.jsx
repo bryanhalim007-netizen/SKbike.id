@@ -31,7 +31,7 @@ export function ProductCard({ product, waNumber, index = 0 }) {
     <>
       <div
         data-testid={`product-card-${product.id}`}
-        className="group flex flex-col rounded-2xl border border-slate-800/80 bg-[#161F2E] overflow-hidden hover:border-[#FF2E2E]/40 hover:-translate-y-1 transition-[transform,border-color] animate-fade-up"
+        className="group card-hover flex flex-col rounded-2xl border border-slate-800/80 bg-[#161F2E] overflow-hidden hover:border-[#FF2E2E]/60 animate-fade-up"
         style={{ animationDelay: `${index * 60}ms` }}
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-[#0A0D14]">
@@ -39,12 +39,13 @@ export function ProductCard({ product, waNumber, index = 0 }) {
             <img
               src={resolveImage(product.image_url)}
               alt={product.name}
-              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
             />
           ) : (
             <div className="flex h-full items-center justify-center text-slate-600 text-sm">Tanpa Gambar</div>
           )}
-          <span className="absolute top-3 left-3 rounded-full bg-[#0A0D14]/80 backdrop-blur px-3 py-1 text-[11px] font-mono-tech uppercase tracking-wider text-[#FF2E2E] border border-[#FF2E2E]/30">
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14]/70 via-transparent to-transparent" />
+          <span className="absolute top-0 left-0 skew-tag bg-[#FF2E2E] pl-5 pr-4 py-1.5 text-[10px] font-mono-tech font-bold uppercase tracking-wider text-white">
             {product.category}
           </span>
           <span
@@ -53,10 +54,11 @@ export function ProductCard({ product, waNumber, index = 0 }) {
           >
             {product.status}
           </span>
+          <span className="absolute bottom-0 left-0 h-1 w-2/3 bg-gradient-to-r from-[#FF2E2E] to-transparent" />
         </div>
 
         <div className="flex flex-1 flex-col p-5">
-          <h3 data-testid={`product-title-${product.id}`} className="font-heading text-lg font-bold text-white leading-snug">
+          <h3 data-testid={`product-title-${product.id}`} className="font-heading text-lg font-bold text-white leading-snug uppercase italic group-hover:text-[#FF2E2E] transition-colors">
             {product.name}
           </h3>
           <p className="mt-2 text-sm text-slate-400 line-clamp-2">{product.description}</p>

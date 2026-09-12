@@ -16,10 +16,10 @@ export function Navbar() {
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#katalog" data-testid="nav-catalog-link" className="hover:text-[#FF2E2E] transition-colors">Katalog</a>
-            <a href="#kategori" className="hover:text-[#FF2E2E] transition-colors">Kategori</a>
-            <a href="#keunggulan" className="hover:text-[#FF2E2E] transition-colors">Keunggulan</a>
+          <nav className="hidden md:flex items-center gap-9 text-sm font-semibold uppercase tracking-wide text-slate-300">
+            <a href="#katalog" data-testid="nav-catalog-link" className="nav-link hover:text-white transition-colors">Katalog</a>
+            <a href="#kategori" className="nav-link hover:text-white transition-colors">Kategori</a>
+            <a href="#keunggulan" className="nav-link hover:text-white transition-colors">Keunggulan</a>
           </nav>
 
           <Link
