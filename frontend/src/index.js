@@ -22,8 +22,10 @@ root.render(
   </React.StrictMode>,
 );
 
+// Aplikasi berjalan online (tidak lagi offline). Bersihkan service worker lama jika ada.
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
-  });
+  navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister())).catch(() => {});
+  if (window.caches) {
+    caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
+  }
 }

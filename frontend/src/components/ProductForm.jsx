@@ -1,25 +1,14 @@
 import { useRef, useState } from "react";
-import { resolveImage } from "../lib/api";
-import * as store from "../lib/store";
+import { resolveImage, uploadImage, addProduct, updateProduct, CATEGORIES } from "../lib/api";
 import { X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const CATEGORIES = store.CATEGORIES;
 const STATUSES = ["Tersedia", "Stok Terbatas", "Inden"];
 
 const EMPTY = {
   name: "", code: "", category: CATEGORIES[0], description: "", price: 0, stock: 0, status: "Tersedia", image_url: "",
   specs: { frame: "", transmisi: "", rem: "", ukuran_roda: "", baterai_motor: "" },
 };
-
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 export function ProductForm({ product, onClose, onSaved }) {
   const [form, setForm] = useState(product ? { ...EMPTY, ...product, specs: { ...EMPTY.specs, ...(product.specs || {}) } } : EMPTY);
@@ -35,31 +24,31 @@ export function ProductForm({ product, onClose, onSaved }) {
     if (!file) return;
     setUploading(true);
     try {
-      const dataUrl = await fileToDataUrl(file);
-      set("image_url", dataUrl);
-      toast.success("Gambar ditambahkan");
+      const url = await uploadImage(file);
+      set("image_url", url);
+      toast.success("Gambar diunggah");
     } catch {
-      toast.error("Gagal memuat gambar");
+      toast.error("Gagal mengunggah gambar");
     } finally {
       setUploading(false);
     }
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
       const payload = { ...form, price: Number(form.price), stock: Number(form.stock) };
       if (product) {
-        store.updateProduct(product.id, payload);
+        await updateProduct(product.id, payload);
         toast.success("Produk diperbarui");
       } else {
-        store.addProduct(payload);
+        await addProduct(payload);
         toast.success("Produk ditambahkan");
       }
       onSaved();
-    } catch {
-      toast.error("Gagal menyimpan");
+    } catch (err) {
+      toast.error(err?.response?.data?.detail ? String(err.response.data.detail) : "Gagal menyimpan");
     } finally {
       setSaving(false);
     }
@@ -129,7 +118,7 @@ export function ProductForm({ product, onClose, onSaved }) {
               <input ref={fileRef} type="file" accept="image/*" onChange={upload} className="hidden" data-testid="admin-image-file-input" />
               <button type="button" data-testid="admin-upload-button" onClick={() => fileRef.current?.click()} disabled={uploading} className="flex items-center gap-2 rounded-lg border border-slate-700 bg-[#161F2E] px-4 py-2.5 text-sm text-white hover:border-[#FF2E2E] transition-colors disabled:opacity-60">
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                {uploading ? "Memuat..." : "Unggah Gambar"}
+                {uploading ? "Mengunggah..." : "Unggah Gambar"}
               </button>
             </div>
           </div>

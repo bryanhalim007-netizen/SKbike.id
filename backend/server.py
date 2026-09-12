@@ -285,43 +285,43 @@ async def upload_image(file: UploadFile = File(...), user: dict = Depends(get_cu
 
 # ---------------- Seed ----------------
 SEED_PRODUCTS = [
-    {"name": "Velox Trail Pro 29", "category": "Sepeda Gunung", "price": 8500000, "stock": 12, "status": "Tersedia",
+    {"name": "SK Trail Pro 29", "category": "Sepeda Gunung", "price": 8500000, "stock": 12, "status": "Tersedia",
      "description": "Sepeda gunung hardtail agresif untuk trail teknikal dengan geometri modern dan handling presisi.",
      "image_url": "https://images.unsplash.com/photo-1621122940876-2b3be129159c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHxtb3VudGFpbiUyMGJpa2UlMjBiaWN5Y2xlJTIwYWN0aW9uJTIwY3ljbGluZ3xlbnwwfHx8fDE3ODkxOTYxMjJ8MA&ixlib=rb-4.1.0&q=85",
      "specs": {"frame": "Aluminium Alloy 6061", "transmisi": "Shimano Deore 12-Speed", "rem": "Hydraulic Disc Brake", "ukuran_roda": "29 inci", "baterai_motor": "-"}},
-    {"name": "Velox Enduro X1", "category": "Sepeda Gunung", "price": 15750000, "stock": 5, "status": "Stok Terbatas",
+    {"name": "SK Enduro X1", "category": "Sepeda Gunung", "price": 15750000, "stock": 5, "status": "Stok Terbatas",
      "description": "Full suspension enduro untuk medan ekstrem, travel 160mm dan performa turunan luar biasa.",
      "image_url": "https://images.unsplash.com/photo-1606087492572-424ebe0f2f61?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwyfHxtb3VudGFpbiUyMGJpa2UlMjBiaWN5Y2xlJTIwYWN0aW9uJTIwY3ljbGluZ3xlbnwwfHx8fDE3ODkxOTYxMjJ8MA&ixlib=rb-4.1.0&q=85",
      "specs": {"frame": "Carbon Fiber", "transmisi": "SRAM GX Eagle 12-Speed", "rem": "SRAM Code R 4-Piston", "ukuran_roda": "29 inci", "baterai_motor": "-"}},
-    {"name": "Velox Street BMX 20", "category": "BMX", "price": 3200000, "stock": 20, "status": "Tersedia",
+    {"name": "SK Street BMX 20", "category": "BMX", "price": 3200000, "stock": 20, "status": "Tersedia",
      "description": "BMX freestyle tangguh untuk trik park dan street, ringan namun kokoh.",
      "image_url": "https://images.unsplash.com/photo-1594015197353-373334c20904?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwyfHxCTVglMjByaWRlciUyMHRyaWNrfGVufDB8fHx8MTc4NzcyMzIyOHww&ixlib=rb-4.1.0&q=85",
      "specs": {"frame": "Chromoly 4130", "transmisi": "Single Speed 25T", "rem": "U-Brake Rear", "ukuran_roda": "20 inci", "baterai_motor": "-"}},
-    {"name": "Velox Pro Park BMX", "category": "BMX", "price": 4100000, "stock": 8, "status": "Tersedia",
+    {"name": "SK Pro Park BMX", "category": "BMX", "price": 4100000, "stock": 8, "status": "Tersedia",
      "description": "BMX kompetisi dengan komponen premium untuk rider tingkat lanjut.",
      "image_url": "https://images.unsplash.com/flagged/photo-1553677969-1d67bbe9d55a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHxCTVglMjByaWRlciUyMHRyaWNrfGVufDB8fHx8MTc4NzcyMzIyOHww&ixlib=rb-4.1.0&q=85",
      "specs": {"frame": "Full Chromoly", "transmisi": "Single Speed 25/9", "rem": "Gyro U-Brake", "ukuran_roda": "20 inci", "baterai_motor": "-"}},
-    {"name": "Velox Junior 16", "category": "Sepeda Anak", "price": 1450000, "stock": 25, "status": "Tersedia",
+    {"name": "SK Junior 16", "category": "Sepeda Anak", "price": 1450000, "stock": 25, "status": "Tersedia",
      "description": "Sepeda anak aman dan ceria dengan roda bantu, cocok usia 4-7 tahun.",
      "image_url": "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080",
      "specs": {"frame": "Hi-Ten Steel", "transmisi": "Single Speed", "rem": "Coaster + V-Brake", "ukuran_roda": "16 inci", "baterai_motor": "-"}},
-    {"name": "Velox Kids Explorer 20", "category": "Sepeda Anak", "price": 1850000, "stock": 0, "status": "Inden",
+    {"name": "SK Kids Explorer 20", "category": "Sepeda Anak", "price": 1850000, "stock": 0, "status": "Inden",
      "description": "Sepeda anak petualang dengan 6-speed untuk usia 8-11 tahun.",
      "image_url": "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080",
      "specs": {"frame": "Aluminium Alloy", "transmisi": "Shimano 6-Speed", "rem": "V-Brake", "ukuran_roda": "20 inci", "baterai_motor": "-"}},
-    {"name": "Velox Fold Urban 20", "category": "Sepeda Lipat", "price": 4750000, "stock": 15, "status": "Tersedia",
+    {"name": "SK Fold Urban 20", "category": "Sepeda Lipat", "price": 4750000, "stock": 15, "status": "Tersedia",
      "description": "Sepeda lipat urban ringkas, dilipat dalam 15 detik untuk mobilitas kota.",
      "image_url": "https://images.unsplash.com/photo-1485965120184-e220f721d03e?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080",
      "specs": {"frame": "Aluminium Alloy Lipat", "transmisi": "Shimano 7-Speed", "rem": "Dual V-Brake", "ukuran_roda": "20 inci", "baterai_motor": "-"}},
-    {"name": "Velox Fold Lite Carbon", "category": "Sepeda Lipat", "price": 9800000, "stock": 4, "status": "Stok Terbatas",
+    {"name": "SK Fold Lite Carbon", "category": "Sepeda Lipat", "price": 9800000, "stock": 4, "status": "Stok Terbatas",
      "description": "Sepeda lipat carbon ultra ringan hanya 9.8kg, ideal untuk komuter premium.",
      "image_url": "https://images.unsplash.com/photo-1485965120184-e220f721d03e?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080",
      "specs": {"frame": "Carbon Fiber Lipat", "transmisi": "Shimano 9-Speed", "rem": "Hydraulic Disc", "ukuran_roda": "20 inci", "baterai_motor": "-"}},
-    {"name": "Velox E-Trail 750W", "category": "Sepeda Listrik", "price": 22500000, "stock": 7, "status": "Tersedia",
+    {"name": "SK E-Trail 750W", "category": "Sepeda Listrik", "price": 22500000, "stock": 7, "status": "Tersedia",
      "description": "E-bike gunung bertenaga motor 750W, jangkauan hingga 80km per pengisian.",
      "image_url": "https://images.unsplash.com/photo-1571068316344-75bc76f77890?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080",
      "specs": {"frame": "Aluminium Alloy E-Bike", "transmisi": "Shimano 9-Speed", "rem": "Hydraulic Disc 180mm", "ukuran_roda": "27.5 inci", "baterai_motor": "Motor 750W / Baterai 48V 15Ah"}},
-    {"name": "Velox E-City Cruiser", "category": "Sepeda Listrik", "price": 16900000, "stock": 10, "status": "Tersedia",
+    {"name": "SK E-City Cruiser", "category": "Sepeda Listrik", "price": 16900000, "stock": 10, "status": "Tersedia",
      "description": "E-bike perkotaan nyaman dengan desain elegan dan bantuan pedal cerdas.",
      "image_url": "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?crop=entropy&cs=srgb&fm=jpg&fit=max&q=80&w=1080",
      "specs": {"frame": "Aluminium Step-Through", "transmisi": "Shimano 7-Speed", "rem": "Tektro Disc Brake", "ukuran_roda": "700c", "baterai_motor": "Motor 500W / Baterai 36V 12Ah"}},
@@ -332,7 +332,7 @@ async def seed_admin():
     admin_password = os.environ["ADMIN_PASSWORD"]
     existing = await db.users.find_one({"email": admin_email})
     if existing is None:
-        await db.users.insert_one({"email": admin_email, "password_hash": hash_password(admin_password), "name": "Admin Velox", "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()})
+        await db.users.insert_one({"email": admin_email, "password_hash": hash_password(admin_password), "name": "Admin SK Bike", "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()})
         logger.info("Admin user seeded")
     elif not verify_password(admin_password, existing["password_hash"]):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})

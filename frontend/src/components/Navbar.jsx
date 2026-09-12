@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { Bike, ShieldCheck } from "lucide-react";
-import { InstallPWA } from "./InstallPWA";
+import { ShieldCheck } from "lucide-react";
+import skLogo from "../assets/sk-logo.jpg";
 
 export function Navbar() {
   return (
@@ -8,23 +8,16 @@ export function Navbar() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="flex h-16 sm:h-20 items-center justify-between">
           <Link to="/" data-testid="nav-logo" className="flex items-center gap-2.5 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FF2E2E] cyan-glow">
-              <Bike className="h-6 w-6 text-[#0A0D14]" />
-            </div>
-            <div className="leading-none">
-              <span className="font-heading text-xl font-extrabold tracking-tight text-white">SK BIKE</span>
-              <span className="block text-[10px] uppercase tracking-[0.3em] text-[#FF2E2E]">Bike Store</span>
-            </div>
+            <img src={skLogo} alt="SK Bike Store" className="h-9 sm:h-11 w-auto rounded-md" />
+            <span className="block text-[10px] uppercase tracking-[0.3em] text-[#FF2E2E]">Bike Store</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-9 text-sm font-semibold uppercase tracking-wide text-slate-300">
             <a href="#katalog" data-testid="nav-catalog-link" className="nav-link hover:text-white transition-colors">Katalog</a>
-            <a href="#kategori" className="nav-link hover:text-white transition-colors">Kategori</a>
-            <a href="#keunggulan" className="nav-link hover:text-white transition-colors">Keunggulan</a>
+            <a href="#find-us" data-testid="nav-findus-link" className="nav-link hover:text-white transition-colors">Find Us</a>
           </nav>
 
           <div className="flex items-center gap-2">
-            <InstallPWA />
             <Link
               to="/admin/login"
               data-testid="nav-admin-button"

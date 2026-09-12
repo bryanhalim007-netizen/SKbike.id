@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { resolveImage } from "../lib/api";
-import * as store from "../lib/store";
+import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, CATEGORIES } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
+import skLogo from "../assets/sk-logo.jpg";
 import {
-  Bike, LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search, Download, Upload,
+  LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -32,7 +32,7 @@ function StatCard({ icon: Icon, label, value, testid }) {
 }
 
 export default function AdminPanel() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [stats, setStats] = useState({ total_products: 0, total_categories: 0, in_stock: 0, inventory_value: 0 });
@@ -41,68 +41,40 @@ export default function AdminPanel() {
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("Semua");
-  const fileInputRef = useRef(null);
-  const [pendingImport, setPendingImport] = useState(null);
 
-  const load = useCallback(() => {
-    setProducts(store.getProducts({ sort: "newest" }));
-    setStats(store.getStats());
+  const load = useCallback(async () => {
+    try {
+      const [list, s] = await Promise.all([adminProducts(), adminStats()]);
+      setProducts(list);
+      setStats(s);
+    } catch {
+      toast.error("Gagal memuat data");
+    }
   }, []);
 
   useEffect(() => {
+    if (loading) return;
     if (!user) { navigate("/admin/login"); return; }
     load();
-  }, [user, load, navigate]);
+  }, [user, loading, load, navigate]);
 
   const onSaved = () => { setShowForm(false); setEditing(null); load(); };
 
-  const confirmDelete = () => {
-    store.deleteProduct(deleteId);
-    toast.success("Produk dihapus");
+  const confirmDelete = async () => {
+    try {
+      await apiDeleteProduct(deleteId);
+      toast.success("Produk dihapus");
+    } catch {
+      toast.error("Gagal menghapus produk");
+    }
     setDeleteId(null);
     load();
   };
 
-  const handleExport = () => {
-    const data = store.exportData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const ts = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `skbike-data-${ts}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success(`Data diekspor (${data.products.length} produk)`);
-  };
-
-  const handleFilePick = (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setPendingImport({ text: reader.result, name: file.name });
-    reader.onerror = () => toast.error("Gagal membaca file");
-    reader.readAsText(file);
-  };
-
-  const runImport = (mode) => {
-    const res = store.importData(pendingImport.text, { mode });
-    if (res.ok) {
-      toast.success(mode === "merge" ? `${res.count} produk digabung` : `${res.count} produk diimpor`);
-      load();
-    } else {
-      toast.error(res.error);
-    }
-    setPendingImport(null);
-  };
-
-  if (!user) return <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center text-slate-500">Memuat...</div>;
+  if (loading || !user) return <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center text-slate-500">Memuat...</div>;
 
   const q = search.trim().toLowerCase();
-  const catOrder = (c) => { const i = store.CATEGORIES.indexOf(c); return i === -1 ? 999 : i; };
+  const catOrder = (c) => { const i = CATEGORIES.indexOf(c); return i === -1 ? 999 : i; };
   const filtered = products
     .filter((p) => {
       const matchesQ = !q || p.name.toLowerCase().includes(q) || (p.code || "").toLowerCase().includes(q);
@@ -116,11 +88,9 @@ export default function AdminPanel() {
       <header className="sticky top-0 z-40 glass border-b border-slate-800/80">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 flex h-16 sm:h-20 items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FF2E2E]">
-              <Bike className="h-6 w-6 text-white" />
-            </div>
+            <img src={skLogo} alt="SK Bike Store" className="h-10 w-auto rounded-md" />
             <div className="leading-none">
-              <span className="font-heading text-lg font-extrabold text-white">SK BIKE Admin</span>
+              <span className="font-heading text-lg font-extrabold text-white">Admin</span>
               <span className="block text-[10px] uppercase tracking-[0.25em] text-[#FF2E2E]">{user?.email}</span>
             </div>
           </div>
@@ -128,13 +98,6 @@ export default function AdminPanel() {
             <Link to="/" className="hidden sm:flex items-center gap-1.5 text-sm text-slate-300 hover:text-[#FF2E2E] transition-colors">
               <ExternalLink className="h-4 w-4" /> Lihat Toko
             </Link>
-            <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={handleFilePick} className="hidden" data-testid="admin-import-file-input" />
-            <button data-testid="admin-export-button" onClick={handleExport} className="hidden sm:flex items-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-2 text-sm font-semibold text-white hover:border-[#FF2E2E]/60 hover:text-[#FF2E2E] transition-colors">
-              <Download className="h-4 w-4" /> Ekspor
-            </button>
-            <button data-testid="admin-import-button" onClick={() => fileInputRef.current?.click()} className="hidden sm:flex items-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-2 text-sm font-semibold text-white hover:border-[#FF2E2E]/60 hover:text-[#FF2E2E] transition-colors">
-              <Upload className="h-4 w-4" /> Impor
-            </button>
             <button data-testid="admin-logout-button" onClick={logout} className="flex items-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-2 text-sm font-semibold text-white hover:border-red-500/60 hover:text-red-400 transition-colors">
               <LogOut className="h-4 w-4" /> Keluar
             </button>
@@ -146,7 +109,7 @@ export default function AdminPanel() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white">Dashboard Produk</h1>
-            <p className="mt-1 text-slate-400 text-sm">Kelola daftar sepeda, harga, stok, dan spesifikasi. Data tersimpan lokal (offline).</p>
+            <p className="mt-1 text-slate-400 text-sm">Kelola daftar sepeda, harga, stok, dan spesifikasi. Data tersimpan online di server.</p>
           </div>
           <button data-testid="admin-add-product-button" onClick={() => { setEditing(null); setShowForm(true); }} className="flex items-center gap-2 rounded-full bg-[#FF2E2E] px-6 py-3 text-sm font-bold text-white cyan-glow hover:scale-105 transition-transform">
             <Plus className="h-4 w-4" /> Tambah Sepeda
@@ -178,16 +141,8 @@ export default function AdminPanel() {
             className="rounded-full border border-slate-700 bg-[#161F2E] px-4 py-3 text-sm text-white outline-none focus:border-[#FF2E2E] transition-colors"
           >
             <option value="Semua">Semua Kategori</option>
-            {store.CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <div className="flex gap-3 sm:hidden">
-            <button data-testid="admin-export-button-mobile" onClick={handleExport} className="flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-3 text-sm font-semibold text-white hover:border-[#FF2E2E]/60 transition-colors">
-              <Download className="h-4 w-4" /> Ekspor
-            </button>
-            <button data-testid="admin-import-button-mobile" onClick={() => fileInputRef.current?.click()} className="flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-3 text-sm font-semibold text-white hover:border-[#FF2E2E]/60 transition-colors">
-              <Upload className="h-4 w-4" /> Impor
-            </button>
-          </div>
         </div>
 
         <div className="rounded-2xl border border-slate-800 bg-[#111723] overflow-hidden">
@@ -251,23 +206,6 @@ export default function AdminPanel() {
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800">Batal</AlertDialogCancel>
             <AlertDialogAction data-testid="confirm-delete-button" onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white">Hapus</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={!!pendingImport} onOpenChange={(o) => !o && setPendingImport(null)}>
-        <AlertDialogContent className="bg-[#111723] border-slate-700">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Impor data dari file?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
-              File: <span className="text-slate-200 font-mono-tech">{pendingImport?.name}</span>.<br />
-              Pilih <b className="text-white">Ganti Semua</b> untuk menimpa seluruh produk, atau <b className="text-white">Gabung</b> untuk menambah/memperbarui tanpa menghapus yang ada.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800 mt-0">Batal</AlertDialogCancel>
-            <AlertDialogAction data-testid="import-merge-button" onClick={() => runImport("merge")} className="bg-slate-700 hover:bg-slate-600 text-white">Gabung</AlertDialogAction>
-            <AlertDialogAction data-testid="import-replace-button" onClick={() => runImport("replace")} className="bg-[#FF2E2E] hover:bg-red-700 text-white">Ganti Semua</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

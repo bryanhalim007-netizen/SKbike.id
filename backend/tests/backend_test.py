@@ -11,7 +11,7 @@ load_dotenv(Path(__file__).resolve().parents[2] / "frontend" / ".env")
 BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
 ADMIN_EMAIL = "bryan.halim007@gmail.com"
 ADMIN_PASSWORD = "velox2026"
-CATEGORIES = ["Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Sepeda Listrik"]
+CATEGORIES = ["Sepeda Listrik", "Sepeda Gunung", "BMX", "Sepeda Anak", "Sepeda Lipat", "Motor / Mobil Aki", "Mini Trail", "Road Bike"]
 
 
 @pytest.fixture(scope="session")
