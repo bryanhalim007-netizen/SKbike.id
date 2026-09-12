@@ -380,6 +380,10 @@ SEED_PRODUCTS = [
      "specs": {"frame": "Aluminium Step-Through", "transmisi": "Shimano 7-Speed", "rem": "Tektro Disc Brake", "ukuran_roda": "700c", "baterai_motor": "Motor 500W / Baterai 36V 12Ah"}},
 ]
 
+EXTRA_ADMINS = [
+    {"email": "skbike.id@store.com", "password": "bryanhalimm21", "name": "Admin SK Bike Store"},
+]
+
 async def seed_admin():
     admin_email = os.environ["ADMIN_EMAIL"].lower()
     admin_password = os.environ["ADMIN_PASSWORD"]
@@ -389,6 +393,14 @@ async def seed_admin():
         logger.info("Admin user seeded")
     elif not verify_password(admin_password, existing["password_hash"]):
         await db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
+    for extra in EXTRA_ADMINS:
+        email = extra["email"].lower()
+        found = await db.users.find_one({"email": email})
+        if found is None:
+            await db.users.insert_one({"email": email, "password_hash": hash_password(extra["password"]), "name": extra.get("name", "Admin"), "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()})
+            logger.info(f"Extra admin seeded: {email}")
+        elif not verify_password(extra["password"], found["password_hash"]):
+            await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(extra["password"])}})
 
 async def seed_products():
     count = await db.products.count_documents({})
