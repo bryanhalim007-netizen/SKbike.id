@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import skLogo from "../assets/sk-logo.jpg";
+import skLogo from "../assets/sk-logo.png";
 
 export default function AdminLogin() {
   const { login } = useAuth();

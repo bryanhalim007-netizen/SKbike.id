@@ -3,7 +3,7 @@ import { CATEGORIES as CATS, getConfig, getProducts } from "../lib/api";
 import { Navbar } from "../components/Navbar";
 import { ProductCard } from "../components/ProductCard";
 import { WhatsAppPopout } from "../components/WhatsAppPopout";
-import skLogo from "../assets/sk-logo.jpg";
+import skLogo from "../assets/sk-logo.png";
 import { Search, Zap, ShieldCheck, Wrench, Truck, MapPin, ArrowDownWideNarrow, ArrowUpNarrowWide, Clock, ChevronRight, Instagram, MessageCircle, Navigation } from "lucide-react";
 
 const CATEGORIES = ["Semua", ...CATS];

@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, CATEGORIES } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
-import skLogo from "../assets/sk-logo.jpg";
+import skLogo from "../assets/sk-logo.png";
 import {
   LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search,
 } from "lucide-react";

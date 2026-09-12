@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
-import skLogo from "../assets/sk-logo.jpg";
+import skLogo from "../assets/sk-logo.png";
 
 export function Navbar() {
   return (
