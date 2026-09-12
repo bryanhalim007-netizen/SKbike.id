@@ -34,9 +34,11 @@ Website jual sepeda biasa & sepeda listrik: katalog + kategori (Sepeda Gunung, B
 - Code-review fixes: kredensial ke env, stable React keys, use-toast effect deps.
 - PWA installable + offline setelah kunjungan pertama.
 - Diverifikasi testing_agent (15/15 pass) + unit logic store.js via Node.
+- Ekspor/Impor data katalog (JSON) di Admin: Ekspor unduh file, Impor mode Ganti Semua / Gabung (diuji browser: replace→2, merge→3, restore seed→8).
+- APK Android (Capacitor) — `/app/SK-Bike-Store.apk` (com.skbike.store, minSdk 22, 4.6MB, offline penuh). Proyek di `/app/mobile`. Build via qemu-x86_64 aapt2 override (host arm64). Panduan di `/app/README_APK.md`.
 
 ## Backlog / Next
-- P1: Tombol Install PWA kustom (prompt beforeinstallparted).
-- P2: Ekspor/impor data katalog (JSON) agar bisa pindah perangkat.
 - P2: Menu hamburger mobile untuk navigasi.
 - P2: Halaman "Tentang / Kontak" terpisah.
+- P2: Ikon aplikasi PWA/APK kustom (logo SK Bike).
+- P3: APK rilis bertanda-tangan untuk Play Store.

@@ -1,0 +1,8 @@
+{
+  "appId": "com.skbike.store",
+  "appName": "SK Bike Store",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  }
+}
