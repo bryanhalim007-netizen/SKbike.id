@@ -22,9 +22,9 @@ const MARQUEE = ["Performance", "Speed", "Durability", "Adventure", "Precision",
 
 const PERKS = [
   { icon: Zap, title: "Performa Tinggi", desc: "Komponen premium untuk setiap medan." },
-  { icon: ShieldCheck, title: "Garansi Resmi", desc: "Jaminan kualitas & servis terpercaya." },
+  { icon: ShieldCheck, title: "Agen Resmi", desc: "Jaminan kualitas & servis terpercaya." },
   { icon: Wrench, title: "Servis Profesional", desc: "Mekanik ahli & suku cadang lengkap." },
-  { icon: Truck, title: "Kirim Seluruh Indonesia", desc: "Pengiriman aman sampai tujuan." },
+  { icon: Truck, title: "Kirim Seluruh Ketapang", desc: "Pengiriman aman sampai tujuan." },
 ];
 
 export default function Storefront() {
