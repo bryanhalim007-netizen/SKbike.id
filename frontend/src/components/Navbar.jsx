@@ -12,7 +12,7 @@ export function Navbar() {
             </div>
             <div className="leading-none">
               <span className="font-heading text-xl font-extrabold tracking-tight text-white">SK BIKE</span>
-              <span className="block text-[10px] uppercase tracking-[0.3em] text-[#FF2E2E]">Bike Studio</span>
+              <span className="block text-[10px] uppercase tracking-[0.3em] text-[#FF2E2E]">Bike Store</span>
             </div>
           </Link>
 

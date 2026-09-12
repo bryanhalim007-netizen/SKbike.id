@@ -195,7 +195,7 @@ export default function Storefront() {
 
       <footer className="border-t border-slate-800/80 bg-[#111723]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-10 text-center">
-          <p className="font-heading text-xl font-extrabold text-white">SK <span className="text-[#FF2E2E]">BIKE STUDIO</span></p>
+          <p className="font-heading text-xl font-extrabold text-white">SK <span className="text-[#FF2E2E]">BIKE STORE</span></p>
           <p className="mt-2 text-sm text-slate-400">Hubungi kami via WhatsApp untuk informasi harga & pemesanan.</p>
           <p className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-200">
             <MapPin className="h-4 w-4 text-[#FF2E2E]" /> Jl Pawan 1, Ketapang, Kalimantan Barat

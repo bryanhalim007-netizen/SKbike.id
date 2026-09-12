@@ -18,7 +18,7 @@ export function WhatsAppPopout({ number }) {
   }, []);
 
   const send = (msg) => {
-    const text = encodeURIComponent(msg || custom || "Halo Admin SK Bike Studio!");
+    const text = encodeURIComponent(msg || custom || "Halo Admin SK Bike Store!");
     window.open(`https://wa.me/${number}?text=${text}`, "_blank");
     setOpen(false);
     setCustom("");
