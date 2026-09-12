@@ -70,6 +70,13 @@ export async function updateProduct(id, payload) {
 export async function deleteProduct(id) {
   await api.delete(`/admin/products/${id}`);
 }
+export async function getAppInfo() {
+  try { const { data } = await api.get("/admin/app-info"); return data; } catch { return { available: false }; }
+}
+export async function downloadApp() {
+  const res = await api.get("/admin/app", { responseType: "blob" });
+  return res.data;
+}
 export async function uploadImage(file) {
   const fd = new FormData();
   fd.append("file", file);

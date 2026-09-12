@@ -8,6 +8,7 @@ load_dotenv(ROOT_DIR / '.env')
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends, UploadFile, File, Header, Query
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response as StarletteResponse
+from fastapi.responses import FileResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, BeforeValidator
 from typing import List, Optional, Annotated
@@ -233,6 +234,21 @@ async def admin_stats(user: dict = Depends(get_current_user)):
     in_stock = sum(1 for d in docs if d.get("stock", 0) > 0)
     inventory_value = sum(d.get("price", 0) * d.get("stock", 0) for d in docs)
     return {"total_products": total, "total_categories": cats, "in_stock": in_stock, "inventory_value": inventory_value}
+
+APK_PATH = ROOT_DIR / "static" / "SK-Bike-Store.apk"
+
+@api_router.get("/admin/app-info")
+async def app_info(user: dict = Depends(get_current_user)):
+    if not APK_PATH.exists():
+        return {"available": False}
+    st = APK_PATH.stat()
+    return {"available": True, "size": st.st_size, "updated_at": datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).isoformat()}
+
+@api_router.get("/admin/app")
+async def download_app(user: dict = Depends(get_current_user)):
+    if not APK_PATH.exists():
+        raise HTTPException(status_code=404, detail="APK belum tersedia")
+    return FileResponse(str(APK_PATH), media_type="application/vnd.android.package-archive", filename="SK-Bike-Store.apk")
 
 @api_router.post("/admin/products")
 async def create_product(payload: ProductCreate, user: dict = Depends(get_current_user)):

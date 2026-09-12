@@ -1,13 +1,14 @@
 {
   "files": {
-    "main.css": "./static/css/main.3a1051c3.css",
-    "main.js": "./static/js/main.8a5f39a7.js",
+    "main.css": "./static/css/main.3a3fbcc4.css",
+    "main.js": "./static/js/main.cf9f0d71.js",
+    "static/media/sk-logo.png": "./static/media/sk-logo.12eb24e19227c1da0524.png",
     "index.html": "./index.html",
-    "main.3a1051c3.css.map": "./static/css/main.3a1051c3.css.map",
-    "main.8a5f39a7.js.map": "./static/js/main.8a5f39a7.js.map"
+    "main.3a3fbcc4.css.map": "./static/css/main.3a3fbcc4.css.map",
+    "main.cf9f0d71.js.map": "./static/js/main.cf9f0d71.js.map"
   },
   "entrypoints": [
-    "static/css/main.3a1051c3.css",
-    "static/js/main.8a5f39a7.js"
+    "static/css/main.3a3fbcc4.css",
+    "static/js/main.cf9f0d71.js"
   ]
 }

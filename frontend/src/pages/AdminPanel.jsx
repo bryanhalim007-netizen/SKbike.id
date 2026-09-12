@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, CATEGORIES } from "../lib/api";
+import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, getAppInfo, downloadApp, CATEGORIES } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
 import skLogo from "../assets/sk-logo.png";
 import {
-  LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search,
+  LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search, Smartphone, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -41,6 +41,8 @@ export default function AdminPanel() {
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("Semua");
+  const [appInfo, setAppInfo] = useState({ available: false });
+  const [downloading, setDownloading] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -56,7 +58,28 @@ export default function AdminPanel() {
     if (loading) return;
     if (!user) { navigate("/admin/login"); return; }
     load();
+    getAppInfo().then(setAppInfo).catch(() => {});
   }, [user, loading, load, navigate]);
+
+  const handleDownloadApp = async () => {
+    setDownloading(true);
+    try {
+      const blob = await downloadApp();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "SK-Bike-Store.apk";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("APK sedang diunduh");
+    } catch {
+      toast.error("Gagal mengunduh APK");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const onSaved = () => { setShowForm(false); setEditing(null); load(); };
 
@@ -98,6 +121,18 @@ export default function AdminPanel() {
             <Link to="/" className="hidden sm:flex items-center gap-1.5 text-sm text-slate-300 hover:text-[#FF2E2E] transition-colors">
               <ExternalLink className="h-4 w-4" /> Lihat Toko
             </Link>
+            {appInfo.available && (
+              <button
+                data-testid="admin-download-apk-button"
+                onClick={handleDownloadApp}
+                disabled={downloading}
+                className="flex items-center gap-2 rounded-full border border-[#FF2E2E]/50 bg-[#FF2E2E]/10 px-4 py-2 text-sm font-semibold text-[#FF6B6B] hover:bg-[#FF2E2E] hover:text-white transition-colors disabled:opacity-60"
+              >
+                {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />}
+                <span className="hidden sm:inline">{downloading ? "Mengunduh..." : "Download APK"}</span>
+                <span className="sm:hidden">APK</span>
+              </button>
+            )}
             <button data-testid="admin-logout-button" onClick={logout} className="flex items-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-4 py-2 text-sm font-semibold text-white hover:border-red-500/60 hover:text-red-400 transition-colors">
               <LogOut className="h-4 w-4" /> Keluar
             </button>
@@ -115,6 +150,29 @@ export default function AdminPanel() {
             <Plus className="h-4 w-4" /> Tambah Sepeda
           </button>
         </div>
+
+        {appInfo.available && (
+          <div data-testid="admin-apk-card" className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-[#FF2E2E]/30 bg-gradient-to-r from-[#FF2E2E]/10 to-transparent p-5">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#FF2E2E]/15 border border-[#FF2E2E]/30">
+                <Smartphone className="h-6 w-6 text-[#FF2E2E]" />
+              </div>
+              <div>
+                <p className="font-heading font-bold text-white">Aplikasi Android (APK)</p>
+                <p className="text-sm text-slate-400">Unduh & pasang aplikasi SK Bike di HP Android. Ukuran ± {(appInfo.size / 1048576).toFixed(1)} MB.</p>
+              </div>
+            </div>
+            <button
+              data-testid="admin-download-apk-card-button"
+              onClick={handleDownloadApp}
+              disabled={downloading}
+              className="flex items-center justify-center gap-2 rounded-full bg-[#FF2E2E] px-6 py-3 text-sm font-bold text-white cyan-glow hover:scale-105 transition-transform disabled:opacity-60"
+            >
+              {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />}
+              {downloading ? "Mengunduh..." : "Download APK Android"}
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard icon={Package} label="Total Sepeda" value={stats.total_products} testid="stat-total-products" />

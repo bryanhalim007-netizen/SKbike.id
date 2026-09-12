@@ -1,13 +1,13 @@
-# SK BIKE — Katalog Sepeda & Sepeda Listrik (Offline PWA)
+# SK BIKE — Katalog Sepeda & Sepeda Listrik (Online)
 
 ## Problem Statement (asli)
 Website jual sepeda biasa & sepeda listrik: katalog + kategori (Sepeda Gunung, BMX, Sepeda Anak, Sepeda Lipat, Sepeda Listrik), tombol pop-out kontak WhatsApp admin, dan Admin Panel untuk mengelola daftar barang.
 
 ## Arsitektur
-- **Mode: OFFLINE-first PWA (100% tanpa server).** Semua data & sesi login di localStorage browser via `frontend/src/lib/store.js`.
-- Frontend: React (CRA + craco), Tailwind, shadcn/ui, lucide-react, sonner.
-- PWA: `public/manifest.json` + `public/sw.js` (cache app shell + gambar), ikon 192/512/apple-touch.
-- Backend FastAPI+Mongo masih ada di repo tapi TIDAK dipakai aplikasi (legacy).
+- **Mode: ONLINE (server + database).** Data produk & sesi login di server (FastAPI + MongoDB). Frontend memanggil backend via `REACT_APP_BACKEND_URL` (axios, `withCredentials`). Auth JWT httpOnly cookie.
+- Frontend: React (CRA + craco), Tailwind, shadcn/ui, lucide-react, sonner. Data layer: `frontend/src/lib/api.js`.
+- Fitur OFFLINE (localStorage `store.js`, PWA service worker, Install App, ekspor/impor) TELAH DIHAPUS (2026-06). SW lama otomatis di-unregister di `index.js` + `public/sw.js`.
+- APK Android (Capacitor, `/app/mobile`) membungkus web app online; admin mengunduhnya dari Admin Panel via `GET /api/admin/app`. File di `/app/backend/static/SK-Bike-Store.apk`.
 
 ## User Personas
 - Pengunjung: menelusuri katalog, filter kategori, sortir harga, chat WhatsApp.
@@ -37,8 +37,18 @@ Website jual sepeda biasa & sepeda listrik: katalog + kategori (Sepeda Gunung, B
 - Ekspor/Impor data katalog (JSON) di Admin: Ekspor unduh file, Impor mode Ganti Semua / Gabung (diuji browser: replace→2, merge→3, restore seed→8).
 - APK Android (Capacitor) — `/app/SK-Bike-Store.apk` (com.skbike.store, minSdk 22, 4.6MB, offline penuh). Proyek di `/app/mobile`. Build via qemu-x86_64 aapt2 override (host arm64). Panduan di `/app/README_APK.md`.
 
+## Migrasi ke ONLINE (per 2026-06)
+- Frontend dipindah dari localStorage (`store.js` — DIHAPUS) ke backend API (`api.js`, axios withCredentials). AuthContext pakai JWT cookie via `/api/auth/*`.
+- Storefront: config + produk dari `/api/config` & `/api/products`. Admin: `/api/admin/products|stats|upload` + CRUD server.
+- Fitur offline dihapus: service worker (auto-unregister), tombol Install PWA, ekspor/impor.
+- Data produk seed diganti brand "SK" (Velox→SK di DB & seed backend).
+- Logo toko diganti dengan logo SK merah mengilap (background dibuat transparan) di navbar, footer, login & panel admin. Klik logo → scroll ke atas (kembali ke tampilan awal).
+- Navbar: tab Kategori & Keunggulan dihapus; tambah tab **Find Us** (WhatsApp, Instagram @skbike_ketapang, alamat + jam buka, tombol Petunjuk Arah, peta Google Maps embed — lokasi 5X27+RQ Baru, Ketapang).
+- APK Android downloadable dari Admin Panel: endpoint `GET /api/admin/app` (admin-only, cookie) + `GET /api/admin/app-info`; file `/app/backend/static/SK-Bike-Store.apk` (~5.8MB). Diuji: app-info OK, download 200 + header apk, unauth 401.
+
 ## Backlog / Next
-- P2: Menu hamburger mobile untuk navigasi.
+- P2: Menu hamburger mobile untuk navigasi (Katalog & Find Us).
+- P2: Favicon logo SK.
 - P2: Halaman "Tentang / Kontak" terpisah.
-- P2: Ikon aplikasi PWA/APK kustom (logo SK Bike).
 - P3: APK rilis bertanda-tangan untuk Play Store.
+- Catatan: rebuild APK setelah deploy ke domain produksi (REACT_APP_BACKEND_URL tertanam saat build).
