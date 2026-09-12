@@ -116,11 +116,12 @@ export function WhatsAppPopout({ number }) {
           target="_blank"
           rel="noopener noreferrer"
           data-testid="floating-instagram-trigger"
-          className="flex h-16 w-16 items-center justify-center rounded-full text-white hover:scale-110 transition-transform"
+          className="relative flex h-16 w-16 items-center justify-center rounded-full text-white hover:scale-110 transition-transform"
           style={{ background: "linear-gradient(45deg, #F58529, #DD2A7B, #8134AF, #515BD4)", boxShadow: "0 0 22px rgba(221, 42, 123, 0.5)" }}
           aria-label="Kunjungi Instagram SK Bike"
         >
-          <Instagram className="h-8 w-8" />
+          <span className="absolute inset-0 rounded-full pulse-ring" style={{ background: "#DD2A7B" }} />
+          <Instagram className="h-8 w-8 relative" />
         </a>
       </div>
 
