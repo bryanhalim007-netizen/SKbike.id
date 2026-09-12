@@ -265,17 +265,54 @@ async def create_product(payload: ProductCreate, user: dict = Depends(get_curren
 
 @api_router.put("/admin/products/{product_id}")
 async def update_product(product_id: str, payload: ProductUpdate, user: dict = Depends(get_current_user)):
+    existing = await db.products.find_one({"_id": ObjectId(product_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Produk tidak ditemukan")
     updates = {k: v for k, v in payload.model_dump(exclude_unset=True).items() if v is not None}
     if "specs" in updates and payload.specs is not None:
         updates["specs"] = payload.specs.model_dump()
     if "category" in updates and updates["category"] not in CATEGORIES:
         raise HTTPException(status_code=400, detail="Kategori tidak valid")
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    # Catat riwayat perubahan harga
+    if "price" in updates:
+        old_price = int(existing.get("price") or 0)
+        new_price = int(updates["price"] or 0)
+        if old_price != new_price:
+            await db.price_history.insert_one({
+                "product_id": str(product_id),
+                "product_name": existing.get("name"),
+                "old_price": old_price,
+                "new_price": new_price,
+                "changed_by": user.get("email"),
+                "changed_at": datetime.now(timezone.utc).isoformat(),
+            })
     res = await db.products.update_one({"_id": ObjectId(product_id)}, {"$set": updates})
     if res.matched_count == 0:
         raise HTTPException(status_code=404, detail="Produk tidak ditemukan")
     saved = await db.products.find_one({"_id": ObjectId(product_id)})
     return product_admin(saved)
+
+def price_history_out(doc):
+    return {
+        "id": str(doc.get("_id")),
+        "product_id": doc.get("product_id"),
+        "product_name": doc.get("product_name"),
+        "old_price": doc.get("old_price"),
+        "new_price": doc.get("new_price"),
+        "changed_by": doc.get("changed_by"),
+        "changed_at": doc.get("changed_at"),
+    }
+
+@api_router.get("/admin/price-history")
+async def price_history_all(user: dict = Depends(get_current_user)):
+    docs = await db.price_history.find().sort("changed_at", -1).to_list(200)
+    return [price_history_out(d) for d in docs]
+
+@api_router.get("/admin/products/{product_id}/price-history")
+async def price_history_product(product_id: str, user: dict = Depends(get_current_user)):
+    docs = await db.price_history.find({"product_id": str(product_id)}).sort("changed_at", -1).to_list(100)
+    return [price_history_out(d) for d in docs]
 
 @api_router.delete("/admin/products/{product_id}")
 async def delete_product(product_id: str, user: dict = Depends(get_current_user)):

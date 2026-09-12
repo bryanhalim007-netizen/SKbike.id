@@ -45,6 +45,7 @@ Website jual sepeda biasa & sepeda listrik: katalog + kategori (Sepeda Gunung, B
 - Logo toko diganti dengan logo SK merah mengilap (background dibuat transparan) di navbar, footer, login & panel admin. Klik logo → scroll ke atas (kembali ke tampilan awal).
 - Navbar: tab Kategori & Keunggulan dihapus; tambah tab **Find Us** (WhatsApp, Instagram @skbike_ketapang, alamat + jam buka, tombol Petunjuk Arah, peta Google Maps embed — lokasi 5X27+RQ Baru, Ketapang).
 - APK Android downloadable dari Admin Panel: endpoint `GET /api/admin/app` (admin-only, cookie) + `GET /api/admin/app-info`; file `/app/backend/static/SK-Bike-Store.apk` (~5.8MB). Diuji: app-info OK, download 200 + header apk, unauth 401.
+- Riwayat Perubahan Harga: setiap update harga produk dicatat di koleksi `price_history` (old/new price, changed_by, changed_at). Endpoint `GET /api/admin/price-history` & `GET /api/admin/products/{id}/price-history`. UI: tombol History per baris di Admin Panel → modal timeline (naik=merah/turun=hijau). Diuji via curl (2 record) + UI modal.
 
 ## Backlog / Next
 - P2: Menu hamburger mobile untuk navigasi (Katalog & Find Us).

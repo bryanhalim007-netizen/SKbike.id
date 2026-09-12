@@ -70,6 +70,14 @@ export async function updateProduct(id, payload) {
 export async function deleteProduct(id) {
   await api.delete(`/admin/products/${id}`);
 }
+export async function priceHistoryAll() {
+  const { data } = await api.get("/admin/price-history");
+  return data;
+}
+export async function priceHistoryProduct(id) {
+  const { data } = await api.get(`/admin/products/${id}/price-history`);
+  return data;
+}
 export async function getAppInfo() {
   try { const { data } = await api.get("/admin/app-info"); return data; } catch { return { available: false }; }
 }

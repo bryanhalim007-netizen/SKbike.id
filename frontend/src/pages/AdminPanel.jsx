@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, getAppInfo, downloadApp, CATEGORIES } from "../lib/api";
+import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, getAppInfo, downloadApp, priceHistoryProduct, CATEGORIES } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
 import skLogo from "../assets/sk-logo.png";
 import {
-  LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search, Smartphone, Loader2,
+  LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search, Smartphone, Loader2, History, TrendingUp, TrendingDown, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -43,6 +43,9 @@ export default function AdminPanel() {
   const [catFilter, setCatFilter] = useState("Semua");
   const [appInfo, setAppInfo] = useState({ available: false });
   const [downloading, setDownloading] = useState(false);
+  const [historyProduct, setHistoryProduct] = useState(null);
+  const [historyList, setHistoryList] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -82,6 +85,20 @@ export default function AdminPanel() {
   };
 
   const onSaved = () => { setShowForm(false); setEditing(null); load(); };
+
+  const openHistory = async (p) => {
+    setHistoryProduct(p);
+    setHistoryLoading(true);
+    setHistoryList([]);
+    try {
+      const list = await priceHistoryProduct(p.id);
+      setHistoryList(list);
+    } catch {
+      toast.error("Gagal memuat riwayat harga");
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const confirmDelete = async () => {
     try {
@@ -237,6 +254,9 @@ export default function AdminPanel() {
                     <td className="px-5 py-4 text-slate-400">{p.status}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button data-testid={`admin-history-${p.id}`} onClick={() => openHistory(p)} title="Riwayat Harga" className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:border-amber-500 hover:text-amber-400 transition-colors">
+                          <History className="h-4 w-4" />
+                        </button>
                         <button data-testid={`admin-edit-${p.id}`} onClick={() => { setEditing(p); setShowForm(true); }} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors">
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -267,6 +287,58 @@ export default function AdminPanel() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {historyProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A0D14]/85 backdrop-blur-sm" onClick={() => setHistoryProduct(null)}>
+          <div data-testid="price-history-modal" onClick={(e) => e.stopPropagation()} className="relative w-full max-w-lg rounded-2xl border border-slate-700 bg-[#111723] p-6 max-h-[85vh] overflow-y-auto animate-fade-up">
+            <button type="button" onClick={() => setHistoryProduct(null)} className="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors">
+              <X className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-3 mb-1">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400"><History className="h-5 w-5" /></span>
+              <div>
+                <h2 className="font-heading text-lg font-bold text-white">Riwayat Perubahan Harga</h2>
+                <p className="text-xs text-slate-400">{historyProduct.name} — harga saat ini {rupiah(historyProduct.price)}</p>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              {historyLoading ? (
+                <div className="flex items-center justify-center py-10 text-slate-500"><Loader2 className="h-5 w-5 animate-spin mr-2" /> Memuat...</div>
+              ) : historyList.length === 0 ? (
+                <div className="py-10 text-center text-slate-500 text-sm">Belum ada perubahan harga untuk produk ini.</div>
+              ) : (
+                <ol className="relative border-l border-slate-800 ml-3 space-y-5">
+                  {historyList.map((h) => {
+                    const up = h.new_price > h.old_price;
+                    const diff = Math.abs(h.new_price - h.old_price);
+                    const d = new Date(h.changed_at);
+                    return (
+                      <li key={h.id} data-testid={`price-history-item-${h.id}`} className="ml-5">
+                        <span className={`absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full ${up ? "bg-red-500/20" : "bg-green-500/20"}`}>
+                          {up ? <TrendingUp className="h-3 w-3 text-red-400" /> : <TrendingDown className="h-3 w-3 text-green-400" />}
+                        </span>
+                        <div className="rounded-xl border border-slate-800 bg-[#0A0D14] p-3">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-slate-500 line-through font-mono-tech">{rupiah(h.old_price)}</span>
+                            <span className="text-slate-500">→</span>
+                            <span className="text-white font-mono-tech font-semibold">{rupiah(h.new_price)}</span>
+                            <span className={`ml-auto text-xs font-semibold ${up ? "text-red-400" : "text-green-400"}`}>{up ? "+" : "−"}{rupiah(diff).replace("Rp ", "Rp ")}</span>
+                          </div>
+                          <p className="mt-1 text-[11px] text-slate-500">
+                            {d.toLocaleString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            {h.changed_by ? ` • oleh ${h.changed_by}` : ""}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
