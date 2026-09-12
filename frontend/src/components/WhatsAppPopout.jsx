@@ -29,7 +29,7 @@ export function WhatsAppPopout({ number }) {
       {open && (
         <div
           data-testid="whatsapp-popout-modal"
-          className="mb-4 w-[92vw] max-w-sm rounded-3xl border border-slate-700/60 bg-[#0B141A] shadow-2xl animate-fade-up overflow-hidden"
+          className="mb-4 w-[92vw] max-w-sm rounded-3xl border border-slate-700/60 bg-[#0B141A] shadow-2xl animate-fade-up overflow-y-auto max-h-[80vh]"
         >
           {/* Header */}
           <div className="relative overflow-hidden px-5 pt-5 pb-6 bg-gradient-to-br from-[#25D366] to-[#0E7A54]">

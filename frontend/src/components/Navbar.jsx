@@ -5,7 +5,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 glass border-b border-slate-800/80">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="flex h-18 items-center justify-between py-4">
+        <div className="flex h-16 sm:h-20 items-center justify-between">
           <Link to="/" data-testid="nav-logo" className="flex items-center gap-2.5 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FF2E2E] cyan-glow">
               <Bike className="h-6 w-6 text-[#0A0D14]" />

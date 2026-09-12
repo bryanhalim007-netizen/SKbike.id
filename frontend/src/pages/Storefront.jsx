@@ -46,7 +46,7 @@ export default function Storefront() {
           <img src={HERO_IMG} alt="Sepeda" className="h-full w-full object-cover opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0A0D14] via-[#0A0D14]/85 to-[#0A0D14]/40" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-5 sm:px-8 py-24 sm:py-32">
+        <div className="relative mx-auto max-w-7xl px-5 sm:px-8 py-16 sm:py-24 lg:py-32">
           <div className="max-w-2xl">
             <span className="inline-block rounded-full border border-[#FF2E2E]/30 bg-[#FF2E2E]/10 px-4 py-1.5 text-xs font-mono-tech uppercase tracking-widest text-[#FF2E2E]">
               Sepeda & Sepeda Listrik
@@ -65,7 +65,7 @@ export default function Storefront() {
       </section>
 
       <section id="keunggulan" className="border-b border-slate-800/80 bg-[#111723]">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 py-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 py-10 grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-6 sm:gap-6">
           {PERKS.map((p) => (
             <div key={p.title} className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FF2E2E]/10 border border-[#FF2E2E]/20">
@@ -120,8 +120,8 @@ export default function Storefront() {
             })}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs uppercase tracking-wider text-slate-500 mr-1">Urutkan</span>
+          <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
+            <span className="w-full lg:w-auto text-xs uppercase tracking-wider text-slate-500 lg:mr-1">Urutkan</span>
             {SORT_OPTIONS.map((opt) => {
               const active = sort === opt.key;
               return (
