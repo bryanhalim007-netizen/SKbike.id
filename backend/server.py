@@ -229,7 +229,7 @@ SALE_FIELDS = [
 ]
 
 def sale_public(doc: dict) -> dict:
-    out = {"id": doc.get("id") or str(doc.get("_id")), "created_at": doc.get("created_at"), "cashier": doc.get("cashier", "")}
+    out = {"id": doc.get("id") or str(doc.get("_id")), "created_at": doc.get("created_at"), "cashier": doc.get("cashier", ""), "owner_email": doc.get("cashier", "")}
     for f in SALE_FIELDS:
         out[f] = doc.get(f)
     return out
@@ -572,8 +572,21 @@ async def create_sale(payload: SaleCreate, user: dict = Depends(get_current_user
 
 @api_router.get("/admin/sales")
 async def list_sales(user: dict = Depends(get_current_user)):
-    docs = await db.sales.find({"deleted_at": None}).sort("created_at", -1).to_list(1000)
-    return [sale_public(d) for d in docs]
+    q = {"deleted_at": None}
+    if not is_super_admin(user):
+        q["cashier"] = user["email"]
+    docs = await db.sales.find(q).sort("created_at", -1).to_list(1000)
+    emails = list({d.get("cashier") for d in docs if d.get("cashier")})
+    name_map = {}
+    if emails:
+        users = await db.users.find({"email": {"$in": emails}}).to_list(200)
+        name_map = {u["email"]: u.get("name", "Admin") for u in users}
+    result = []
+    for d in docs:
+        pub = sale_public(d)
+        pub["owner_name"] = name_map.get(pub["owner_email"], pub["owner_email"] or "Admin")
+        result.append(pub)
+    return result
 
 def _num(d: dict, k: str) -> float:
     v = d.get(k)
@@ -584,7 +597,10 @@ def _num(d: dict, k: str) -> float:
 
 @api_router.get("/admin/sales/summary")
 async def sales_summary(user: dict = Depends(get_current_user)):
-    docs = await db.sales.find({"deleted_at": None}).to_list(5000)
+    q = {"deleted_at": None}
+    if not is_super_admin(user):
+        q["cashier"] = user["email"]
+    docs = await db.sales.find(q).to_list(5000)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     today_docs = [d for d in docs if str(d.get("created_at", ""))[:10] == today]
     return {
@@ -601,18 +617,20 @@ async def update_sale(sale_id: str, payload: SaleCreate, user: dict = Depends(ge
     doc = await db.sales.find_one({"id": sale_id, "deleted_at": None})
     if not doc:
         raise HTTPException(status_code=404, detail="Penjualan tidak ditemukan")
+    if doc.get("cashier") != user["email"]:
+        raise HTTPException(status_code=403, detail="Tidak dapat mengubah transaksi admin lain")
     await db.sales.update_one({"id": sale_id}, {"$set": payload.dict()})
     updated = await db.sales.find_one({"id": sale_id})
     return sale_public(updated)
 
 @api_router.delete("/admin/sales/{sale_id}")
 async def delete_sale(sale_id: str, user: dict = Depends(get_current_user)):
-    res = await db.sales.update_one(
-        {"id": sale_id, "deleted_at": None},
-        {"$set": {"deleted_at": datetime.now(timezone.utc).isoformat()}},
-    )
-    if res.matched_count == 0:
+    doc = await db.sales.find_one({"id": sale_id, "deleted_at": None})
+    if not doc:
         raise HTTPException(status_code=404, detail="Penjualan tidak ditemukan")
+    if doc.get("cashier") != user["email"]:
+        raise HTTPException(status_code=403, detail="Tidak dapat menghapus transaksi admin lain")
+    await db.sales.update_one({"id": sale_id}, {"$set": {"deleted_at": datetime.now(timezone.utc).isoformat()}})
     return {"ok": True}
 
 APK_PATH = ROOT_DIR / "static" / "SK-Bike-Store.apk"

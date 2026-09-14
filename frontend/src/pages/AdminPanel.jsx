@@ -6,6 +6,7 @@ import { ProductForm } from "../components/ProductForm";
 import CashierPanel from "./CashierPanel";
 import AdminAccounts from "./AdminAccounts";
 import Attendance from "./Attendance";
+import SalesHistory from "./SalesHistory";
 import { PinGate } from "../components/PinGate";
 import skLogo from "../assets/sk-logo.png";
 import {
@@ -167,12 +168,15 @@ export default function AdminPanel() {
         <div className="flex gap-1 mb-8 border-b border-slate-800">
           <button data-testid="admin-tab-produk" onClick={() => setTab("produk")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "produk" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Produk</button>
           <button data-testid="admin-tab-kasir" onClick={() => setTab("kasir")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "kasir" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Kasir</button>
+          <button data-testid="admin-tab-history" onClick={() => setTab("history")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "history" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>History</button>
           <button data-testid="admin-tab-absensi" onClick={() => setTab("absensi")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "absensi" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Absensi</button>
           {user?.is_super && <button data-testid="admin-tab-admin" onClick={() => setTab("admin")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "admin" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Admin</button>}
         </div>
 
         {tab === "kasir" ? (
           unlocked.kasir ? <CashierPanel /> : <PinGate title="Kasir" testid="pin-kasir" verify={(pin) => verifyPin("kasir", pin)} onUnlock={() => setUnlocked((u) => ({ ...u, kasir: true }))} />
+        ) : tab === "history" ? (
+          <SalesHistory />
         ) : tab === "absensi" ? (
           <Attendance />
         ) : tab === "admin" ? (

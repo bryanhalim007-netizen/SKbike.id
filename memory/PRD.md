@@ -62,6 +62,10 @@ Website jual sepeda biasa & sepeda listrik: katalog + kategori (Sepeda Gunung, B
 - **Absensi Pegawai**: tab "Absensi" untuk semua admin. Tiap admin kelola pegawai sendiri (owner_id) — tambah/hapus. Data pegawai: Nama, Umur, Jabatan, No HP, Alamat (tanpa foto KTP). Absensi harian per pegawai: Hadir/Izin/Sakit/Alpa (upsert per tanggal, tanggal WIB). Klik nama → modal detail + riwayat kehadiran. Super admin: MELIHAT semua pegawai dari semua admin, dikelompokkan per admin, read-only (403 jika coba ubah milik admin lain). Endpoint: `GET/POST /api/admin/employees`, `GET/DELETE /api/admin/employees/{id}`, `POST/GET /api/admin/attendance`. Koleksi `employees` & `attendance` (hapus pegawai → cascade hapus absensi).
 - Diuji: curl backend lengkap (isolasi per-admin, upsert, super read-only 403, cascade) + testing_agent frontend 100% pass (iteration_5).
 
+## History Penjualan per Admin (per 2026-06)
+- Penjualan kini ter-scope per admin berdasarkan `cashier` (email pembuat). `GET /api/admin/sales` & `/summary`: admin biasa hanya melihat penjualannya sendiri; super admin melihat semua + `owner_email`/`owner_name`. `PUT/DELETE /api/admin/sales/{id}` wajib pemilik (403 bila lintas-admin) — berlaku juga untuk Riwayat di tab Kasir.
+- Tab baru **History** (untuk semua admin): kartu ringkasan + daftar riwayat penjualan (Bagikan ke WhatsApp, thumbnail foto + lightbox). Super admin: semua penjualan dikelompokkan per admin (read-only). Diuji testing_agent frontend 100% pass (iteration_6).
+
 ## Backlog / Next
 - P2: Menu hamburger mobile untuk navigasi (Katalog & Find Us).
 - P2: Favicon logo SK.
