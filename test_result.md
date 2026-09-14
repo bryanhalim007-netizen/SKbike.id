@@ -101,3 +101,77 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Toko sepeda SK Bike. Perubahan terbaru: pisah halaman (Home/Katalog/Find Us), filter kategori+rentang harga, fitur keranjang (WhatsApp checkout), badge ukuran roda, dan penambahan Harga Modal (cost_price) + Harga Jual (price) dengan crop gambar 4:3 di ProductForm."
+
+backend:
+  - task: "Public products expose selling price (price)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "product_public now includes 'price' (Harga Jual) so catalog/cart can show price. cost_price (Harga Modal) must NOT be exposed in public /api/products."
+        - working: true
+          agent: "testing"
+          comment: "TESTED & VERIFIED: GET /api/products correctly returns all products with numeric 'price' field. Verified 'cost_price' and 'code' are NOT exposed in public endpoint. Tested with 10 existing products and 1 newly created test product. All products correctly hide sensitive admin fields."
+  - task: "Admin create/update product with cost_price (Harga Modal)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added cost_price to ProductCreate/ProductUpdate. /api/admin/products returns cost_price + price + code. Verify create with cost_price persists and update modifies it. Auth required (admin: bryan.halim007@gmail.com / velox2026)."
+        - working: true
+          agent: "testing"
+          comment: "TESTED & VERIFIED: (1) POST /api/admin/products successfully creates product with price=5000000 and cost_price=3500000, both fields persist correctly. (2) GET /api/admin/products returns all products including price, cost_price, and code fields. (3) PUT /api/admin/products/{id} successfully updates both price (5000000→5250000) and cost_price (3500000→3600000), changes persist correctly. (4) Public endpoint verified to show updated price but hide cost_price. Admin auth via Bearer token working correctly."
+
+frontend:
+  - task: "Catalog price display, price range filter, cart totals"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Catalog.jsx, frontend/src/components/ProductCard.jsx, frontend/src/components/CartDrawer.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Verified visually: prices show (Rp 8.500.000 etc), wheel-size badge on image, cart add/qty/total work."
+  - task: "Image crop 4:3 in ProductForm on upload"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/ProductForm.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added react-easy-crop modal locked to 4:3, output 800x600, then upload. Not yet UI-tested."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 2
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Please test backend only. 1) GET /api/products must include 'price' but NOT 'cost_price'. 2) Admin login (bryan.halim007@gmail.com / velox2026), then POST /api/admin/products with cost_price and price -> verify both persist and are returned by GET /api/admin/products. 3) PUT /api/admin/products/{id} updating cost_price and price -> verify persisted. Do not test frontend."
+    - agent: "testing"
+      message: "✅ ALL BACKEND TESTS PASSED (6/6). Product pricing implementation is correct: (1) Public endpoint GET /api/products correctly exposes 'price' and hides 'cost_price' and 'code' for all products. (2) Admin create POST /api/admin/products successfully persists both price and cost_price. (3) Admin list GET /api/admin/products correctly returns price, cost_price, and code. (4) Admin update PUT /api/admin/products/{id} successfully updates both price and cost_price. (5) Public endpoint verified to show updated price while maintaining cost_price privacy. No issues found. Backend implementation complete and working correctly."

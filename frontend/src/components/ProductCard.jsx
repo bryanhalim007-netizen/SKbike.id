@@ -39,10 +39,9 @@ export function ProductCard({ product, waNumber, index = 0 }) {
     { icon: Box, label: "Baterai / Motor", value: specs.baterai_motor },
   ].filter((s) => s.value && s.value !== "-");
 
-  // Spesifikasi ringkas untuk kartu: 2 spec utama + selalu tampilkan Ukuran Roda bila ada.
+  // Spesifikasi ringkas untuk kartu: 2 spec utama (ukuran roda ditampilkan sebagai badge di gambar).
   const wheelSpec = specRows.find((s) => s.label === "Ukuran Roda");
-  const cardSpecs = [...specRows.slice(0, 2)];
-  if (wheelSpec && !cardSpecs.includes(wheelSpec)) cardSpecs.push(wheelSpec);
+  const cardSpecs = specRows.filter((s) => s.label !== "Ukuran Roda").slice(0, 2);
 
   return (
     <>
@@ -71,6 +70,14 @@ export function ProductCard({ product, waNumber, index = 0 }) {
           >
             {product.status}
           </span>
+          {wheelSpec && (
+            <span
+              data-testid={`product-wheel-badge-${product.id}`}
+              className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full border border-[#FF2E2E]/60 bg-[#0A0D14]/85 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg backdrop-blur-sm"
+            >
+              <Ruler className="h-3.5 w-3.5 text-[#FF2E2E]" /> {wheelSpec.value}
+            </span>
+          )}
           <span className="absolute bottom-0 left-0 h-1 w-2/3 bg-gradient-to-r from-[#FF2E2E] to-transparent" />
         </div>
 
@@ -80,13 +87,11 @@ export function ProductCard({ product, waNumber, index = 0 }) {
           </h3>
           <p className="mt-2 text-sm text-slate-400 line-clamp-2">{product.description}</p>
 
-          <div className="mt-4 flex items-center justify-between">
-            {product.price > 0 ? (
+          {product.price > 0 && (
+            <div className="mt-4 flex items-center justify-between">
               <span data-testid={`product-price-${product.id}`} className="font-heading text-lg font-black text-white italic">{rupiah(product.price)}</span>
-            ) : (
-              <span data-testid={`product-price-${product.id}`} className="text-sm font-semibold text-slate-400">Hubungi admin</span>
-            )}
-          </div>
+            </div>
+          )}
 
           <div data-testid={`product-specs-${product.id}`} className="mt-3 space-y-1.5">
             {cardSpecs.map((s) => (
