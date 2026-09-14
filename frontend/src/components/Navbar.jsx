@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { ShieldCheck, Menu, X } from "lucide-react";
+import { ShieldCheck, Menu, X, ShoppingCart } from "lucide-react";
 import skLogo from "../assets/sk-logo.png";
+import { useCart } from "../context/CartContext";
 
 const RESELLER_WA = `https://wa.me/628125559681?text=${encodeURIComponent("Halo Saya ingin Menjadi Reseller SK Bike")}`;
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const { totalItems, setOpen: setCartOpen } = useCart();
 
   const linkClass = ({ isActive }) =>
     `nav-link transition-colors ${isActive ? "text-[#FF2E2E]" : "text-slate-300 hover:text-white"}`;
@@ -45,6 +47,23 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              data-testid="nav-cart-button"
+              onClick={() => setCartOpen(true)}
+              aria-label="Buka keranjang"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-[#161F2E] text-white hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span
+                  data-testid="nav-cart-badge"
+                  className="absolute -top-1.5 -right-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#FF2E2E] px-1 text-[11px] font-bold text-white shadow"
+                >
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
+            </button>
             <Link
               to="/admin/login"
               data-testid="nav-admin-button"

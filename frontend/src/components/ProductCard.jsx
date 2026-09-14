@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { resolveImage } from "../lib/api";
-import { MessageCircle, Info, Box, Cpu, Disc, Settings2, Ruler, X } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { toast } from "sonner";
+import { MessageCircle, Info, Box, Cpu, Disc, Settings2, Ruler, X, ShoppingCart } from "lucide-react";
 
 const STATUS_STYLES = {
   "Tersedia": "bg-[#10B981]/15 text-[#10B981] border-[#10B981]/40",
@@ -8,9 +10,19 @@ const STATUS_STYLES = {
   "Inden": "bg-slate-500/15 text-slate-300 border-slate-500/40",
 };
 
+const rupiah = (n) => "Rp " + new Intl.NumberFormat("id-ID").format(Number(n) || 0);
+
 export function ProductCard({ product, waNumber, index = 0 }) {
   const [detail, setDetail] = useState(false);
+  const { addItem, setOpen: setCartOpen } = useCart();
   const specs = product.specs || {};
+
+  const addToCart = () => {
+    addItem(product, 1);
+    toast.success(`${product.name} ditambahkan ke keranjang`, {
+      action: { label: "Lihat", onClick: () => setCartOpen(true) },
+    });
+  };
 
   const inquire = () => {
     const msg = encodeURIComponent(
@@ -63,7 +75,15 @@ export function ProductCard({ product, waNumber, index = 0 }) {
           </h3>
           <p className="mt-2 text-sm text-slate-400 line-clamp-2">{product.description}</p>
 
-          <div data-testid={`product-specs-${product.id}`} className="mt-4 space-y-1.5">
+          <div className="mt-4 flex items-center justify-between">
+            {product.price > 0 ? (
+              <span data-testid={`product-price-${product.id}`} className="font-heading text-lg font-black text-white italic">{rupiah(product.price)}</span>
+            ) : (
+              <span data-testid={`product-price-${product.id}`} className="text-sm font-semibold text-slate-400">Hubungi admin</span>
+            )}
+          </div>
+
+          <div data-testid={`product-specs-${product.id}`} className="mt-3 space-y-1.5">
             {specRows.slice(0, 2).map((s) => (
               <div key={s.label} className="flex items-center gap-2 text-xs text-slate-400">
                 <s.icon className="h-3.5 w-3.5 text-[#FF2E2E]" />
@@ -73,22 +93,31 @@ export function ProductCard({ product, waNumber, index = 0 }) {
             ))}
           </div>
 
-          <div className="mt-auto pt-5 flex gap-2">
+          <div className="mt-auto pt-5 space-y-2">
             <button
-              data-testid={`btn-wa-inquire-${product.id}`}
-              onClick={inquire}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white hover:brightness-110 transition-[filter]"
+              data-testid={`btn-add-cart-${product.id}`}
+              onClick={addToCart}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF2E2E] px-4 py-2.5 text-sm font-semibold text-white hover:brightness-110 hover:scale-[1.02] transition-[filter,transform]"
             >
-              <MessageCircle className="h-4 w-4" /> Tanya via WA
+              <ShoppingCart className="h-4 w-4" /> Tambah ke Keranjang
             </button>
-            <button
-              data-testid={`btn-product-detail-${product.id}`}
-              onClick={() => setDetail(true)}
-              className="flex items-center justify-center rounded-xl border border-slate-700 bg-[#0A0D14] px-3 py-2.5 text-slate-300 hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors"
-              aria-label="Detail spesifikasi"
-            >
-              <Info className="h-4 w-4" />
-            </button>
+            <div className="flex gap-2">
+              <button
+                data-testid={`btn-wa-inquire-${product.id}`}
+                onClick={inquire}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white hover:brightness-110 transition-[filter]"
+              >
+                <MessageCircle className="h-4 w-4" /> Tanya via WA
+              </button>
+              <button
+                data-testid={`btn-product-detail-${product.id}`}
+                onClick={() => setDetail(true)}
+                className="flex items-center justify-center rounded-xl border border-slate-700 bg-[#0A0D14] px-3 py-2.5 text-slate-300 hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors"
+                aria-label="Detail spesifikasi"
+              >
+                <Info className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -109,6 +138,9 @@ export function ProductCard({ product, waNumber, index = 0 }) {
             <div className="p-6">
               <span className="text-[11px] font-mono-tech uppercase tracking-wider text-[#FF2E2E]">{product.category}</span>
               <h3 className="font-heading text-2xl font-extrabold text-white mt-1">{product.name}</h3>
+              {product.price > 0 && (
+                <p className="mt-2 font-heading text-xl font-black text-white italic">{rupiah(product.price)}</p>
+              )}
               <p className="mt-3 text-sm text-slate-400 leading-relaxed">{product.description}</p>
 
               <div className="mt-5 rounded-xl border border-slate-800 divide-y divide-slate-800">
@@ -121,12 +153,21 @@ export function ProductCard({ product, waNumber, index = 0 }) {
                 ))}
               </div>
 
-              <button
-                onClick={inquire}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-sm font-semibold text-white hover:brightness-110 transition-[filter]"
-              >
-                <MessageCircle className="h-4 w-4" /> Tanya Ketersediaan via WhatsApp
-              </button>
+              <div className="mt-5 flex gap-2">
+                <button
+                  data-testid={`modal-add-cart-${product.id}`}
+                  onClick={() => { addToCart(); setDetail(false); }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF2E2E] px-4 py-3 text-sm font-semibold text-white hover:brightness-110 transition-[filter]"
+                >
+                  <ShoppingCart className="h-4 w-4" /> Tambah ke Keranjang
+                </button>
+                <button
+                  onClick={inquire}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-sm font-semibold text-white hover:brightness-110 transition-[filter]"
+                >
+                  <MessageCircle className="h-4 w-4" /> Tanya via WA
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { getConfig } from "../lib/api";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { WhatsAppPopout } from "./WhatsAppPopout";
+import { CartDrawer } from "./CartDrawer";
 
 export function Layout() {
   const [waNumber, setWaNumber] = useState("628125559681");
@@ -26,6 +27,7 @@ export function Layout() {
       </main>
       <Footer />
       <WhatsAppPopout number={waNumber} />
+      <CartDrawer waNumber={waNumber} />
     </div>
   );
 }
