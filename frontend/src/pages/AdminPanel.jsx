@@ -1,9 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, getAppInfo, downloadApp, priceHistoryProduct, CATEGORIES } from "../lib/api";
+import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, getAppInfo, downloadApp, priceHistoryProduct, verifyPin, CATEGORIES } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
 import CashierPanel from "./CashierPanel";
+import AdminAccounts from "./AdminAccounts";
+import Attendance from "./Attendance";
+import { PinGate } from "../components/PinGate";
 import skLogo from "../assets/sk-logo.png";
 import {
   LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search, Smartphone, Loader2, History, TrendingUp, TrendingDown, X,
@@ -48,6 +51,7 @@ export default function AdminPanel() {
   const [historyList, setHistoryList] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [tab, setTab] = useState("produk");
+  const [unlocked, setUnlocked] = useState({ produk: false, kasir: false });
 
   const load = useCallback(async () => {
     try {
@@ -163,9 +167,17 @@ export default function AdminPanel() {
         <div className="flex gap-1 mb-8 border-b border-slate-800">
           <button data-testid="admin-tab-produk" onClick={() => setTab("produk")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "produk" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Produk</button>
           <button data-testid="admin-tab-kasir" onClick={() => setTab("kasir")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "kasir" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Kasir</button>
+          <button data-testid="admin-tab-absensi" onClick={() => setTab("absensi")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "absensi" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Absensi</button>
+          {user?.is_super && <button data-testid="admin-tab-admin" onClick={() => setTab("admin")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "admin" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Admin</button>}
         </div>
 
-        {tab === "kasir" ? <CashierPanel /> : (
+        {tab === "kasir" ? (
+          unlocked.kasir ? <CashierPanel /> : <PinGate title="Kasir" testid="pin-kasir" verify={(pin) => verifyPin("kasir", pin)} onUnlock={() => setUnlocked((u) => ({ ...u, kasir: true }))} />
+        ) : tab === "absensi" ? (
+          <Attendance />
+        ) : tab === "admin" ? (
+          <AdminAccounts />
+        ) : unlocked.produk ? (
         <>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -281,7 +293,7 @@ export default function AdminPanel() {
           </div>
         </div>
         </>
-        )}
+        ) : <PinGate title="Dashboard Produk" testid="pin-produk" verify={(pin) => verifyPin("produk", pin)} onUnlock={() => setUnlocked((u) => ({ ...u, produk: true }))} />}
       </main>
 
       {showForm && <ProductForm product={editing} onClose={() => { setShowForm(false); setEditing(null); }} onSaved={onSaved} />}

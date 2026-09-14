@@ -1,0 +1,37 @@
+{
+  "summary": "Frontend-only testing per request: PIN gates for Produk (1614) and Kasir (1515) tabs, and super-admin-only Admin management UI. All 26 assertions passed. Verified that non-super admin (skbike.id@store.com) does NOT see the Admin tab. Full CRUD on admin accounts (create/change-password/delete) works with proper toasts and confirm dialog. Super admin's delete button is disabled. TEST_ admins were cleaned up.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "seed_admin()", "issue": "EXTRA_ADMINS (skbike.id@store.com) password is NOT re-synced from EXTRA_ADMINS on backend restart (only the super admin from env is). This is not a bug for prod, but during parallel testing a super admin can change the extra admin's password permanently, locking out the seeded credential until manually reset."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "AdminPanel header", "issues": ["Right-side 'Keluar' (logout) button is partially cut off by the toast area at 1920px viewport (see screenshots) - the button label 'Keluar' is truncated to 'Kelu'. Consider adjusting header padding or toast placement."]}
+    ],
+    "code_warnings": [
+      {"component": "PinGate", "issue": "React warning in console: 'Cannot update a component (AdminPanel) while rendering a different component (PinGate).' PinGate is calling onUnlock() (which triggers a setState in AdminPanel) inside its render/commit path via submit() called from press(). Wrap onUnlock invocation in a microtask (e.g. queueMicrotask or setTimeout 0) or move submit into a useEffect based on pin length to fix."}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "(Low) Fix React setState-during-render warning by deferring onUnlock() call in PinGate.jsx (e.g. wrap in setTimeout 0 or trigger via useEffect on pin length === 4).",
+    "(Low) Make EXTRA_ADMINS seeding idempotent - re-sync password from EXTRA_ADMINS on startup if it differs, matching the super admin behavior. Or document that extra admin password is only seeded once.",
+    "(Low, UI) Ensure the 'Keluar' logout button in the AdminPanel header is fully visible and not overlapped/truncated by toast notifications."
+  ],
+  "critical_code_review_comments": [
+    "PinGate.jsx invokes onUnlock() synchronously inside the state updater path, causing a React setState-during-render warning. Defer with useEffect or setTimeout.",
+    "seed_admin() only re-syncs the primary admin password from env; extra admins' passwords are not resynced, which caused a temporary lockout during testing when a super admin changed the extra admin's password."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% (26/26 assertions passed)"},
+  "test_credentials": "bryan.halim007@gmail.com / velox2026 (super); skbike.id@store.com / bryanhalimm21 (non-super); PIN Produk=1614, PIN Kasir=1515",
+  "seed_data_creation": "Created TEST_qa_flow@sk.com admin during test and deleted it. Also cleaned up a leftover TEST_qa524696@sk.com admin from a prior parallel test run. Final DB state: only bryan.halim007@gmail.com and skbike.id@store.com remain. Also had to reset skbike.id@store.com password back to bryanhalimm21 via super-admin API (it had been changed by a parallel test agent) and restart backend to re-sync the super admin password.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Both PIN gates and the super-admin gating of the Admin tab are working correctly. If super admin login mysteriously starts failing with 401, restart backend (sudo supervisorctl restart backend) - the primary admin password is re-synced from env on startup. If the extra admin (skbike.id@store.com) password fails, it must be reset manually via PUT /api/admin/admins/{id}/password because seed_admin does NOT re-sync extra admin passwords. Parallel test agents can cause interference - watch for it. React setState-in-render warning is present but non-blocking.",
+  "rca of the issue": "N/A - all functional tests passed. Environmental note: mid-test the super admin login broke because a concurrent test session on another IP changed the super admin password via PUT /api/admin/admins/{super_id}/password. Fixed by restarting backend (which re-syncs the super password from ADMIN_PASSWORD env). Extra admin password had to be manually reset via API."
+}

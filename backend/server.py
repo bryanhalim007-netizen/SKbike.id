@@ -79,6 +79,17 @@ async def get_current_user(request: Request) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token tidak valid")
 
+def get_super_admin_email() -> str:
+    return os.environ["ADMIN_EMAIL"].lower()
+
+def is_super_admin(user: dict) -> bool:
+    return (user.get("email") or "").lower() == get_super_admin_email()
+
+async def require_super_admin(user: dict = Depends(get_current_user)) -> dict:
+    if not is_super_admin(user):
+        raise HTTPException(status_code=403, detail="Hanya admin utama yang dapat mengelola akun admin")
+    return user
+
 # ---------------- Brute force protection ----------------
 MAX_FAILED_ATTEMPTS = 5
 LOCKOUT_MINUTES = 15
@@ -244,7 +255,7 @@ async def login(payload: LoginInput, request: Request, response: Response):
     access = create_access_token(uid, email)
     refresh = create_refresh_token(uid)
     set_auth_cookies(response, access, refresh)
-    return {"id": uid, "email": email, "name": user.get("name", "Admin"), "role": user.get("role", "admin"), "token": access}
+    return {"id": uid, "email": email, "name": user.get("name", "Admin"), "role": user.get("role", "admin"), "is_super": email == get_super_admin_email(), "token": access}
 
 @api_router.post("/auth/refresh")
 async def refresh_token(request: Request, response: Response):
@@ -275,7 +286,234 @@ async def logout(response: Response):
 
 @api_router.get("/auth/me")
 async def me(user: dict = Depends(get_current_user)):
-    return {"id": user["_id"], "email": user["email"], "name": user.get("name", "Admin"), "role": user.get("role", "admin")}
+    return {"id": user["_id"], "email": user["email"], "name": user.get("name", "Admin"), "role": user.get("role", "admin"), "is_super": is_super_admin(user)}
+
+# ---------------- Admin account management (super admin only) ----------------
+class AdminCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str = "Admin"
+
+class PasswordChange(BaseModel):
+    password: str
+
+def admin_public(u: dict) -> dict:
+    email = (u.get("email") or "").lower()
+    return {
+        "id": str(u.get("_id")),
+        "email": u.get("email"),
+        "name": u.get("name", "Admin"),
+        "role": u.get("role", "admin"),
+        "is_super": email == get_super_admin_email(),
+        "created_at": u.get("created_at"),
+    }
+
+@api_router.get("/admin/admins")
+async def list_admins(user: dict = Depends(require_super_admin)):
+    docs = await db.users.find({}).sort("created_at", 1).to_list(200)
+    return [admin_public(d) for d in docs]
+
+@api_router.post("/admin/admins")
+async def create_admin(payload: AdminCreate, user: dict = Depends(require_super_admin)):
+    email = payload.email.lower()
+    if len(payload.password) < 6:
+        raise HTTPException(status_code=400, detail="Kata sandi minimal 6 karakter")
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(status_code=400, detail="Email sudah terdaftar")
+    doc = {"email": email, "password_hash": hash_password(payload.password), "name": payload.name or "Admin", "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()}
+    res = await db.users.insert_one(doc)
+    doc["_id"] = res.inserted_id
+    return admin_public(doc)
+
+@api_router.delete("/admin/admins/{admin_id}")
+async def delete_admin(admin_id: str, user: dict = Depends(require_super_admin)):
+    try:
+        oid = ObjectId(admin_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID tidak valid")
+    target = await db.users.find_one({"_id": oid})
+    if not target:
+        raise HTTPException(status_code=404, detail="Admin tidak ditemukan")
+    if (target.get("email") or "").lower() == get_super_admin_email():
+        raise HTTPException(status_code=400, detail="Admin utama tidak dapat dihapus")
+    if str(target["_id"]) == user["_id"]:
+        raise HTTPException(status_code=400, detail="Tidak dapat menghapus akun sendiri")
+    await db.users.delete_one({"_id": oid})
+    return {"ok": True}
+
+@api_router.put("/admin/admins/{admin_id}/password")
+async def change_admin_password(admin_id: str, payload: PasswordChange, user: dict = Depends(require_super_admin)):
+    if len(payload.password) < 6:
+        raise HTTPException(status_code=400, detail="Kata sandi minimal 6 karakter")
+    try:
+        oid = ObjectId(admin_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID tidak valid")
+    target = await db.users.find_one({"_id": oid})
+    if not target:
+        raise HTTPException(status_code=404, detail="Admin tidak ditemukan")
+    await db.users.update_one({"_id": oid}, {"$set": {"password_hash": hash_password(payload.password)}})
+    return {"ok": True}
+
+# ---------------- Access PIN (super admin manages, any admin verifies) ----------------
+DEFAULT_PINS = {"produk": "1614", "kasir": "1515"}
+
+async def get_access_pins() -> dict:
+    doc = await db.settings.find_one({"key": "access_pins"})
+    if not doc:
+        return dict(DEFAULT_PINS)
+    return {"produk": doc.get("produk", DEFAULT_PINS["produk"]), "kasir": doc.get("kasir", DEFAULT_PINS["kasir"])}
+
+class PinsUpdate(BaseModel):
+    produk: Optional[str] = None
+    kasir: Optional[str] = None
+
+class PinVerify(BaseModel):
+    scope: str
+    pin: str
+
+@api_router.get("/admin/pins")
+async def get_pins(user: dict = Depends(require_super_admin)):
+    return await get_access_pins()
+
+@api_router.put("/admin/pins")
+async def update_pins(payload: PinsUpdate, user: dict = Depends(require_super_admin)):
+    update = {}
+    for field in ("produk", "kasir"):
+        val = getattr(payload, field)
+        if val is not None:
+            if not (val.isdigit() and len(val) == 4):
+                raise HTTPException(status_code=400, detail="PIN harus 4 angka")
+            update[field] = val
+    if not update:
+        raise HTTPException(status_code=400, detail="Tidak ada PIN untuk diperbarui")
+    await db.settings.update_one({"key": "access_pins"}, {"$set": {"key": "access_pins", **update}}, upsert=True)
+    return await get_access_pins()
+
+@api_router.post("/admin/verify-pin")
+async def verify_pin(payload: PinVerify, user: dict = Depends(get_current_user)):
+    pins = await get_access_pins()
+    if payload.scope not in pins:
+        raise HTTPException(status_code=400, detail="Scope tidak valid")
+    return {"ok": pins[payload.scope] == payload.pin}
+
+# ---------------- Absensi / Pegawai ----------------
+ATTENDANCE_STATUSES = {"Hadir", "Izin", "Sakit", "Alpa"}
+
+def wib_today() -> str:
+    return (datetime.now(timezone.utc) + timedelta(hours=7)).strftime("%Y-%m-%d")
+
+def _valid_date(s: str) -> bool:
+    try:
+        datetime.strptime(s, "%Y-%m-%d")
+        return True
+    except (ValueError, TypeError):
+        return False
+
+class EmployeeCreate(BaseModel):
+    nama: str
+    umur: Optional[int] = None
+    alamat: Optional[str] = None
+    no_hp: Optional[str] = None
+    jabatan: Optional[str] = None
+
+class AttendanceMark(BaseModel):
+    employee_id: str
+    date: str
+    status: str
+
+def employee_public(e: dict) -> dict:
+    return {
+        "id": e.get("id"),
+        "nama": e.get("nama"),
+        "umur": e.get("umur"),
+        "alamat": e.get("alamat"),
+        "no_hp": e.get("no_hp"),
+        "jabatan": e.get("jabatan"),
+        "owner_id": e.get("owner_id"),
+        "owner_email": e.get("owner_email"),
+        "owner_name": e.get("owner_name"),
+        "created_at": e.get("created_at"),
+    }
+
+async def _get_employee_or_403(emp_id: str, user: dict, require_owner: bool = False) -> dict:
+    emp = await db.employees.find_one({"id": emp_id})
+    if not emp:
+        raise HTTPException(status_code=404, detail="Pegawai tidak ditemukan")
+    is_owner = emp.get("owner_id") == user["_id"]
+    if require_owner and not is_owner:
+        raise HTTPException(status_code=403, detail="Tidak dapat mengubah data pegawai admin lain")
+    if not is_owner and not is_super_admin(user):
+        raise HTTPException(status_code=403, detail="Tidak diizinkan")
+    return emp
+
+@api_router.get("/admin/employees")
+async def list_employees(user: dict = Depends(get_current_user)):
+    query = {} if is_super_admin(user) else {"owner_id": user["_id"]}
+    docs = await db.employees.find(query).sort("created_at", 1).to_list(2000)
+    today = wib_today()
+    result = []
+    for d in docs:
+        att = await db.attendance.find_one({"employee_id": d["id"], "date": today})
+        pub = employee_public(d)
+        pub["today_status"] = att.get("status") if att else None
+        result.append(pub)
+    return result
+
+@api_router.post("/admin/employees")
+async def create_employee(payload: EmployeeCreate, user: dict = Depends(get_current_user)):
+    if not payload.nama.strip():
+        raise HTTPException(status_code=400, detail="Nama pegawai wajib diisi")
+    doc = {
+        "id": str(uuid.uuid4()),
+        "owner_id": user["_id"],
+        "owner_email": user["email"],
+        "owner_name": user.get("name", "Admin"),
+        "nama": payload.nama.strip(),
+        "umur": payload.umur,
+        "alamat": (payload.alamat or "").strip() or None,
+        "no_hp": (payload.no_hp or "").strip() or None,
+        "jabatan": (payload.jabatan or "").strip() or None,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.employees.insert_one(doc)
+    pub = employee_public(doc)
+    pub["today_status"] = None
+    return pub
+
+@api_router.get("/admin/employees/{emp_id}")
+async def get_employee(emp_id: str, user: dict = Depends(get_current_user)):
+    emp = await _get_employee_or_403(emp_id, user)
+    return employee_public(emp)
+
+@api_router.delete("/admin/employees/{emp_id}")
+async def delete_employee(emp_id: str, user: dict = Depends(get_current_user)):
+    await _get_employee_or_403(emp_id, user, require_owner=True)
+    await db.employees.delete_one({"id": emp_id})
+    await db.attendance.delete_many({"employee_id": emp_id})
+    return {"ok": True}
+
+@api_router.post("/admin/attendance")
+async def mark_attendance(payload: AttendanceMark, user: dict = Depends(get_current_user)):
+    if payload.status not in ATTENDANCE_STATUSES:
+        raise HTTPException(status_code=400, detail="Status tidak valid")
+    if not _valid_date(payload.date):
+        raise HTTPException(status_code=400, detail="Tanggal tidak valid")
+    await _get_employee_or_403(payload.employee_id, user, require_owner=True)
+    now = datetime.now(timezone.utc).isoformat()
+    await db.attendance.update_one(
+        {"employee_id": payload.employee_id, "date": payload.date},
+        {"$set": {"status": payload.status, "updated_at": now},
+         "$setOnInsert": {"id": str(uuid.uuid4()), "employee_id": payload.employee_id, "date": payload.date, "owner_id": user["_id"], "created_at": now}},
+        upsert=True,
+    )
+    return {"ok": True, "employee_id": payload.employee_id, "date": payload.date, "status": payload.status}
+
+@api_router.get("/admin/attendance")
+async def list_attendance(employee_id: str, user: dict = Depends(get_current_user)):
+    await _get_employee_or_403(employee_id, user)
+    docs = await db.attendance.find({"employee_id": employee_id}).sort("date", -1).to_list(400)
+    return [{"id": d.get("id"), "date": d.get("date"), "status": d.get("status"), "updated_at": d.get("updated_at")} for d in docs]
 
 # ---------------- Public routes ----------------
 @api_router.get("/config")
@@ -541,8 +779,6 @@ async def seed_admin():
         if found is None:
             await db.users.insert_one({"email": email, "password_hash": hash_password(extra["password"]), "name": extra.get("name", "Admin"), "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()})
             logger.info(f"Extra admin seeded: {email}")
-        elif not verify_password(extra["password"], found["password_hash"]):
-            await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(extra["password"])}})
 
 async def seed_products():
     count = await db.products.count_documents({})

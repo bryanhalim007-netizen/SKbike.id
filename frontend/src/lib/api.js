@@ -63,7 +63,7 @@ export async function getProducts({ sort } = {}) {
 export async function login(email, password) {
   try {
     const { data } = await api.post("/auth/login", { email, password });
-    return { ok: true, user: { id: data.id, email: data.email, name: data.name, role: data.role } };
+    return { ok: true, user: { id: data.id, email: data.email, name: data.name, role: data.role, is_super: data.is_super } };
   } catch (e) {
     return { ok: false, error: formatApiErrorDetail(e?.response?.data?.detail) };
   }
@@ -133,5 +133,56 @@ export async function deleteSale(id) {
 }
 export async function salesSummary() {
   const { data } = await api.get("/admin/sales/summary");
+  return data;
+}
+
+// ---- Admin account management (super admin only) ----
+export async function listAdmins() {
+  const { data } = await api.get("/admin/admins");
+  return data;
+}
+export async function createAdmin(payload) {
+  const { data } = await api.post("/admin/admins", payload);
+  return data;
+}
+export async function deleteAdmin(id) {
+  await api.delete(`/admin/admins/${id}`);
+}
+export async function changeAdminPassword(id, password) {
+  await api.put(`/admin/admins/${id}/password`, { password });
+}
+
+// ---- Access PINs ----
+export async function getPins() {
+  const { data } = await api.get("/admin/pins");
+  return data;
+}
+export async function updatePins(payload) {
+  const { data } = await api.put("/admin/pins", payload);
+  return data;
+}
+export async function verifyPin(scope, pin) {
+  const { data } = await api.post("/admin/verify-pin", { scope, pin });
+  return data.ok;
+}
+
+// ---- Absensi / Pegawai ----
+export async function listEmployees() {
+  const { data } = await api.get("/admin/employees");
+  return data;
+}
+export async function createEmployee(payload) {
+  const { data } = await api.post("/admin/employees", payload);
+  return data;
+}
+export async function deleteEmployee(id) {
+  await api.delete(`/admin/employees/${id}`);
+}
+export async function listAttendance(employeeId) {
+  const { data } = await api.get("/admin/attendance", { params: { employee_id: employeeId } });
+  return data;
+}
+export async function markAttendance(payload) {
+  const { data } = await api.post("/admin/attendance", payload);
   return data;
 }
