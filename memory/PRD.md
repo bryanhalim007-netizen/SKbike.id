@@ -47,6 +47,14 @@ Website jual sepeda biasa & sepeda listrik: katalog + kategori (Sepeda Gunung, B
 - APK Android downloadable dari Admin Panel: endpoint `GET /api/admin/app` (admin-only, cookie) + `GET /api/admin/app-info`; file `/app/backend/static/SK-Bike-Store.apk` (~5.8MB). Diuji: app-info OK, download 200 + header apk, unauth 401.
 - Riwayat Perubahan Harga: setiap update harga produk dicatat di koleksi `price_history` (old/new price, changed_by, changed_at). Endpoint `GET /api/admin/price-history` & `GET /api/admin/products/{id}/price-history`. UI: tombol History per baris di Admin Panel → modal timeline (naik=merah/turun=hijau). Diuji via curl (2 record) + UI modal.
 
+## Kasir / Kalkulator POS (per 2026-06)
+- Ditambahkan fitur **Kasir** sebagai tab di dalam Admin Panel (tab: Produk | Kasir). Port setia dari repo referensi Kalkulator (bryanhalim007/Kalkulator).
+- **Kalkulator kode rahasia**: keypad huruf P Y F V H K T B R Q Z (P=0,Y=1,F=2,V=3,H=4,K=5,T=6,B=7,R=8,Q=9, Z=ulang angka sebelumnya). Digit di-pad kanan ke 7 digit → Harga Modal (mis. "YVK"→"135"→Rp 1.350.000). Tujuan: sembunyikan harga modal dari pembeli di depan kasir.
+- Alur: input kode → Check Harga Jual → input Margin (Rp) + chip cepat (+100rb/+250rb/+500rb/+1jt) → Harga Jual = Modal + Margin. Tombol "Harga ke Pembeli" (modal harga jual besar) & "Barang Terjual" (form catatan penjualan).
+- Form penjualan (teks saja, tanpa foto): tanggal, nama pembeli, nama barang, kode barang, ukuran/warna, harga modal, margin, harga jual, metode pembayaran (Cash/Transfer), sudah diambil (Belum/Sudah), metode pengambilan (Pick up Sendiri/Travel), alamat pengiriman.
+- **Riwayat penjualan**: daftar transaksi + kartu ringkasan (penjualan & omzet hari ini, total penjualan, total margin), edit & hapus (soft delete).
+- Backend: koleksi `sales` + rute admin-protected `POST/GET/PUT/DELETE /api/admin/sales` & `GET /api/admin/sales/summary` (soft delete via `deleted_at`). Diuji: curl CRUD lengkap OK + testing_agent frontend 100% pass. Regresi harga publik tetap tersembunyi (dikonfirmasi).
+
 ## Backlog / Next
 - P2: Menu hamburger mobile untuk navigasi (Katalog & Find Us).
 - P2: Favicon logo SK.

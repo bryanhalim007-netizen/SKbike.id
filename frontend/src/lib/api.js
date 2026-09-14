@@ -116,3 +116,22 @@ export async function uploadImage(file) {
   const { data } = await api.post("/admin/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
   return data.image_url;
 }
+export async function createSale(payload) {
+  const { data } = await api.post("/admin/sales", payload);
+  return data;
+}
+export async function listSales() {
+  const { data } = await api.get("/admin/sales");
+  return data;
+}
+export async function updateSale(id, payload) {
+  const { data } = await api.put(`/admin/sales/${id}`, payload);
+  return data;
+}
+export async function deleteSale(id) {
+  await api.delete(`/admin/sales/${id}`);
+}
+export async function salesSummary() {
+  const { data } = await api.get("/admin/sales/summary");
+  return data;
+}

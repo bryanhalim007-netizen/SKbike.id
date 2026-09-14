@@ -193,6 +193,34 @@ def product_admin(doc: dict) -> dict:
     pub["code"] = doc.get("code", "")
     return pub
 
+# ---------------- Kasir (Kalkulator) models ----------------
+class SaleCreate(BaseModel):
+    tanggal_penjualan: Optional[str] = None
+    nama_pembeli: Optional[str] = None
+    nama_barang: Optional[str] = None
+    kode_barang: Optional[str] = None
+    ukuran_warna: Optional[str] = None
+    kode_huruf: Optional[str] = None
+    harga_modal: Optional[float] = None
+    harga_jual: Optional[float] = None
+    margin: Optional[float] = None
+    metode_pembayaran: Optional[str] = None
+    sudah_diambil: Optional[str] = None
+    metode_pengambilan: Optional[str] = None
+    alamat_pengiriman: Optional[str] = None
+
+SALE_FIELDS = [
+    "tanggal_penjualan", "nama_pembeli", "nama_barang", "kode_barang", "ukuran_warna",
+    "kode_huruf", "harga_modal", "harga_jual", "margin", "metode_pembayaran",
+    "sudah_diambil", "metode_pengambilan", "alamat_pengiriman",
+]
+
+def sale_public(doc: dict) -> dict:
+    out = {"id": doc.get("id") or str(doc.get("_id")), "created_at": doc.get("created_at"), "cashier": doc.get("cashier", "")}
+    for f in SALE_FIELDS:
+        out[f] = doc.get(f)
+    return out
+
 # ---------------- Auth routes ----------------
 class LoginInput(BaseModel):
     email: EmailStr
@@ -289,6 +317,63 @@ async def admin_stats(user: dict = Depends(get_current_user)):
     in_stock = sum(1 for d in docs if d.get("stock", 0) > 0)
     inventory_value = sum(d.get("price", 0) * d.get("stock", 0) for d in docs)
     return {"total_products": total, "total_categories": cats, "in_stock": in_stock, "inventory_value": inventory_value}
+
+# ---------------- Kasir / Sales routes ----------------
+@api_router.post("/admin/sales")
+async def create_sale(payload: SaleCreate, user: dict = Depends(get_current_user)):
+    now = datetime.now(timezone.utc).isoformat()
+    doc = payload.dict()
+    doc["id"] = str(uuid.uuid4())
+    doc["created_at"] = now
+    doc["deleted_at"] = None
+    doc["cashier"] = user.get("email", "")
+    await db.sales.insert_one(doc)
+    return sale_public(doc)
+
+@api_router.get("/admin/sales")
+async def list_sales(user: dict = Depends(get_current_user)):
+    docs = await db.sales.find({"deleted_at": None}).sort("created_at", -1).to_list(1000)
+    return [sale_public(d) for d in docs]
+
+def _num(d: dict, k: str) -> float:
+    v = d.get(k)
+    try:
+        return float(v) if v else 0.0
+    except (TypeError, ValueError):
+        return 0.0
+
+@api_router.get("/admin/sales/summary")
+async def sales_summary(user: dict = Depends(get_current_user)):
+    docs = await db.sales.find({"deleted_at": None}).to_list(5000)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_docs = [d for d in docs if str(d.get("created_at", ""))[:10] == today]
+    return {
+        "total_transactions": len(docs),
+        "total_revenue": sum(_num(d, "harga_jual") for d in docs),
+        "total_margin": sum(_num(d, "margin") for d in docs),
+        "today_transactions": len(today_docs),
+        "today_revenue": sum(_num(d, "harga_jual") for d in today_docs),
+        "today_margin": sum(_num(d, "margin") for d in today_docs),
+    }
+
+@api_router.put("/admin/sales/{sale_id}")
+async def update_sale(sale_id: str, payload: SaleCreate, user: dict = Depends(get_current_user)):
+    doc = await db.sales.find_one({"id": sale_id, "deleted_at": None})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Penjualan tidak ditemukan")
+    await db.sales.update_one({"id": sale_id}, {"$set": payload.dict()})
+    updated = await db.sales.find_one({"id": sale_id})
+    return sale_public(updated)
+
+@api_router.delete("/admin/sales/{sale_id}")
+async def delete_sale(sale_id: str, user: dict = Depends(get_current_user)):
+    res = await db.sales.update_one(
+        {"id": sale_id, "deleted_at": None},
+        {"$set": {"deleted_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Penjualan tidak ditemukan")
+    return {"ok": True}
 
 APK_PATH = ROOT_DIR / "static" / "SK-Bike-Store.apk"
 

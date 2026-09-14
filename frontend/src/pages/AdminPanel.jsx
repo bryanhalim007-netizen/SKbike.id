@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { resolveImage, adminProducts, adminStats, deleteProduct as apiDeleteProduct, getAppInfo, downloadApp, priceHistoryProduct, CATEGORIES } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductForm } from "../components/ProductForm";
+import CashierPanel from "./CashierPanel";
 import skLogo from "../assets/sk-logo.png";
 import {
   LogOut, Plus, Pencil, Trash2, Package, Layers, CheckCircle2, Wallet, ExternalLink, Search, Smartphone, Loader2, History, TrendingUp, TrendingDown, X,
@@ -46,6 +47,7 @@ export default function AdminPanel() {
   const [historyProduct, setHistoryProduct] = useState(null);
   const [historyList, setHistoryList] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [tab, setTab] = useState("produk");
 
   const load = useCallback(async () => {
     try {
@@ -158,6 +160,13 @@ export default function AdminPanel() {
       </header>
 
       <main className="mx-auto max-w-7xl px-5 sm:px-8 py-10">
+        <div className="flex gap-1 mb-8 border-b border-slate-800">
+          <button data-testid="admin-tab-produk" onClick={() => setTab("produk")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "produk" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Produk</button>
+          <button data-testid="admin-tab-kasir" onClick={() => setTab("kasir")} className={`px-5 py-3 text-sm font-bold uppercase tracking-wide border-b-2 -mb-px transition-colors ${tab === "kasir" ? "border-[#FF2E2E] text-white" : "border-transparent text-slate-500 hover:text-slate-300"}`}>Kasir</button>
+        </div>
+
+        {tab === "kasir" ? <CashierPanel /> : (
+        <>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white">Dashboard Produk</h1>
@@ -271,6 +280,8 @@ export default function AdminPanel() {
             </table>
           </div>
         </div>
+        </>
+        )}
       </main>
 
       {showForm && <ProductForm product={editing} onClose={() => { setShowForm(false); setEditing(null); }} onSaved={onSaved} />}
