@@ -1,8 +1,16 @@
-import { Link } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { ShieldCheck, Menu, X } from "lucide-react";
 import skLogo from "../assets/sk-logo.png";
 
+const RESELLER_WA = `https://wa.me/628125559681?text=${encodeURIComponent("Halo Saya ingin Menjadi Reseller SK Bike")}`;
+
 export function Navbar() {
+  const [open, setOpen] = useState(false);
+
+  const linkClass = ({ isActive }) =>
+    `nav-link transition-colors ${isActive ? "text-[#FF2E2E]" : "text-slate-300 hover:text-white"}`;
+
   return (
     <header className="sticky top-0 z-40 glass border-b border-slate-800/80">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -10,12 +18,7 @@ export function Navbar() {
           <Link
             to="/"
             data-testid="nav-logo"
-            onClick={() => {
-              if (window.location.hash) {
-                window.history.replaceState(null, "", window.location.pathname);
-              }
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
+            onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 group"
           >
             <img src={skLogo} alt="SK Bike Store" className="h-9 sm:h-11 w-auto rounded-md" />
@@ -25,11 +28,12 @@ export function Navbar() {
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-9 text-sm font-semibold uppercase tracking-wide text-slate-300">
-            <a href="#katalog" data-testid="nav-catalog-link" className="nav-link hover:text-white transition-colors">Katalog</a>
-            <a href="#find-us" data-testid="nav-findus-link" className="nav-link hover:text-white transition-colors">Find Us</a>
+          <nav className="hidden md:flex items-center gap-9 text-sm font-semibold uppercase tracking-wide">
+            <NavLink to="/" end data-testid="nav-home-link" className={linkClass}>Beranda</NavLink>
+            <NavLink to="/katalog" data-testid="nav-catalog-link" className={linkClass}>Katalog</NavLink>
+            <NavLink to="/find-us" data-testid="nav-findus-link" className={linkClass}>Find Us</NavLink>
             <a
-              href={`https://wa.me/628125559681?text=${encodeURIComponent("Halo Saya ingin Menjadi Reseller SK Bike")}`}
+              href={RESELLER_WA}
               target="_blank"
               rel="noopener noreferrer"
               data-testid="nav-reseller-link"
@@ -48,9 +52,36 @@ export function Navbar() {
             >
               <ShieldCheck className="h-4 w-4" /> <span className="hidden sm:inline">Admin Panel</span><span className="sm:hidden">Admin</span>
             </Link>
+            <button
+              type="button"
+              data-testid="nav-mobile-toggle"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Menu"
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-[#161F2E] text-white hover:border-[#FF2E2E] transition-colors"
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Menu Mobile */}
+      {open && (
+        <nav data-testid="nav-mobile-menu" className="md:hidden border-t border-slate-800/80 bg-[#0B0E16] px-5 py-4 flex flex-col gap-1 text-sm font-semibold uppercase tracking-wide">
+          <NavLink to="/" end onClick={() => setOpen(false)} className={({ isActive }) => `py-3 border-b border-slate-800/60 ${isActive ? "text-[#FF2E2E]" : "text-slate-300"}`}>Beranda</NavLink>
+          <NavLink to="/katalog" onClick={() => setOpen(false)} className={({ isActive }) => `py-3 border-b border-slate-800/60 ${isActive ? "text-[#FF2E2E]" : "text-slate-300"}`}>Katalog</NavLink>
+          <NavLink to="/find-us" onClick={() => setOpen(false)} className={({ isActive }) => `py-3 border-b border-slate-800/60 ${isActive ? "text-[#FF2E2E]" : "text-slate-300"}`}>Find Us</NavLink>
+          <a
+            href={RESELLER_WA}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            className="py-3 flex items-center gap-2 text-[#FF2E2E]"
+          >
+            <span className="beep-dot h-2 w-2 rounded-full bg-[#FF2E2E]" /> Daftar Menjadi Reseller
+          </a>
+        </nav>
+      )}
     </header>
   );
 }
