@@ -39,6 +39,11 @@ export function ProductCard({ product, waNumber, index = 0 }) {
     { icon: Box, label: "Baterai / Motor", value: specs.baterai_motor },
   ].filter((s) => s.value && s.value !== "-");
 
+  // Spesifikasi ringkas untuk kartu: 2 spec utama + selalu tampilkan Ukuran Roda bila ada.
+  const wheelSpec = specRows.find((s) => s.label === "Ukuran Roda");
+  const cardSpecs = [...specRows.slice(0, 2)];
+  if (wheelSpec && !cardSpecs.includes(wheelSpec)) cardSpecs.push(wheelSpec);
+
   return (
     <>
       <div
@@ -84,7 +89,7 @@ export function ProductCard({ product, waNumber, index = 0 }) {
           </div>
 
           <div data-testid={`product-specs-${product.id}`} className="mt-3 space-y-1.5">
-            {specRows.slice(0, 2).map((s) => (
+            {cardSpecs.map((s) => (
               <div key={s.label} className="flex items-center gap-2 text-xs text-slate-400">
                 <s.icon className="h-3.5 w-3.5 text-[#FF2E2E]" />
                 <span className="text-slate-500">{s.label}:</span>
