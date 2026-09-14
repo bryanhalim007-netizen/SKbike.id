@@ -117,6 +117,7 @@ export default function CashierPanel() {
       ...emptyForm,
       tanggal: todayISO(),
       kode_huruf: letters.join(""),
+      kode_barang: letters.join(""),
       harga_modal: hargaModal,
       margin,
     });
@@ -353,8 +354,8 @@ export default function CashierPanel() {
 
       {/* Buyer price modal */}
       {showBuyer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A0D14]/90 backdrop-blur-sm" onClick={() => setShowBuyer(false)}>
-          <div data-testid="cashier-buyer-modal" onClick={(e) => e.stopPropagation()} className="relative w-full max-w-sm rounded-2xl border border-slate-700 bg-[#111723] p-8 text-center animate-fade-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black" onClick={() => setShowBuyer(false)}>
+          <div data-testid="cashier-buyer-modal" onClick={(e) => e.stopPropagation()} className="relative w-full max-w-sm rounded-2xl border border-slate-800 bg-[#050608] p-8 text-center animate-fade-up">
             <button onClick={() => setShowBuyer(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
             <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Harga</p>
             <p data-testid="cashier-buyer-price" className="mt-3 font-heading text-5xl font-bold text-[#FF2E2E]">{rupiah(hargaJual)}</p>
