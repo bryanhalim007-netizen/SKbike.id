@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { CATEGORIES as CATS, getProducts } from "../lib/api";
 import { ProductCard } from "../components/ProductCard";
-import { Search, ArrowDownWideNarrow, ArrowUpNarrowWide, Clock, Wallet, X, SlidersHorizontal } from "lucide-react";
+import { Search, ArrowDownWideNarrow, ArrowUpNarrowWide, Clock, Wallet, X, SlidersHorizontal, ArrowUp } from "lucide-react";
 
 const CATEGORIES = ["Semua", ...CATS];
 const SORT_OPTIONS = [
@@ -33,6 +33,14 @@ export default function Catalog() {
   const [rangeKey, setRangeKey] = useState("all");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -231,6 +239,19 @@ export default function Catalog() {
             <ProductCard key={p.id} product={p} waNumber={waNumber} index={i} />
           ))}
         </div>
+      )}
+
+      {/* Tombol scroll ke atas — muncul di atas pop-up Instagram */}
+      {showTop && (
+        <button
+          type="button"
+          data-testid="scroll-to-top-btn"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="Kembali ke atas"
+          className="fixed right-7 bottom-44 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FF2E2E] text-white shadow-lg cyan-glow hover:scale-110 hover:brightness-110 transition-[transform,filter] animate-fade-up"
+        >
+          <ArrowUp className="h-6 w-6" />
+        </button>
       )}
     </section>
   );
