@@ -54,6 +54,7 @@ Website jual sepeda biasa & sepeda listrik: katalog + kategori (Sepeda Gunung, B
 - Form penjualan (teks saja, tanpa foto): tanggal, nama pembeli, nama barang, kode barang, ukuran/warna, harga modal, margin, harga jual, metode pembayaran (Cash/Transfer), sudah diambil (Belum/Sudah), metode pengambilan (Pick up Sendiri/Travel), alamat pengiriman.
 - **Riwayat penjualan**: daftar transaksi + kartu ringkasan (penjualan & omzet hari ini, total penjualan, total margin), edit & hapus (soft delete).
 - Backend: koleksi `sales` + rute admin-protected `POST/GET/PUT/DELETE /api/admin/sales` & `GET /api/admin/sales/summary` (soft delete via `deleted_at`). Diuji: curl CRUD lengkap OK + testing_agent frontend 100% pass. Regresi harga publik tetap tersembunyi (dikonfirmasi).
+- **Tambahan (2026-06)**: (a) modal "Harga ke Pembeli" background hitam solid; (b) Kode Harga otomatis mengisi Kode Barang di form (tetap bisa diedit); (c) upload **Foto Produk** & **Bukti Transfer** di form penjualan via object storage (`POST /api/admin/upload`, field `foto_produk`/`bukti_transfer`), tampil sebagai thumbnail + lightbox di Riwayat; (d) tombol **Bagikan ke WhatsApp** per baris Riwayat (wa.me dengan ringkasan penjualan). Diuji testing_agent 100% pass.
 
 ## Backlog / Next
 - P2: Menu hamburger mobile untuk navigasi (Katalog & Find Us).

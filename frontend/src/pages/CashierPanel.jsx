@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { createSale, listSales, updateSale, deleteSale, salesSummary } from "../lib/api";
+import { createSale, listSales, updateSale, deleteSale, salesSummary, uploadImage, resolveImage } from "../lib/api";
 import { toast } from "sonner";
 import {
   Delete, Eye, Receipt as ReceiptIcon, History, ArrowLeft, X, Trash2, Pencil,
-  Loader2, Calculator, TrendingUp, Wallet, EyeOff, Keyboard as KeyboardIcon,
+  Loader2, Calculator, EyeOff, Keyboard as KeyboardIcon, Share2, ImagePlus, Camera,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -41,6 +41,7 @@ const emptyForm = {
   tanggal: todayISO(), nama_pembeli: "", nama_barang: "", kode_barang: "", ukuran_warna: "",
   kode_huruf: "", harga_modal: 0, margin: 0,
   metode_pembayaran: "", sudah_diambil: "", metode_pengambilan: "", alamat_pengiriman: "",
+  foto_produk: "", bukti_transfer: "",
 };
 
 function Segmented({ value, onChange, options, testid }) {
@@ -61,6 +62,26 @@ function Segmented({ value, onChange, options, testid }) {
   );
 }
 
+function PhotoUpload({ label, value, uploading, onSelect, onRemove, testid, icon: Icon }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-semibold uppercase tracking-widest text-slate-500 mb-1.5">{label}</label>
+      {value ? (
+        <div className="relative h-40 w-full overflow-hidden rounded-xl border border-slate-700 bg-[#0A0D14]">
+          <img src={resolveImage(value)} alt={label} className="h-full w-full object-cover" />
+          <button type="button" data-testid={`${testid}-remove`} onClick={onRemove} className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white hover:bg-red-600 transition-colors"><X className="h-4 w-4" /></button>
+        </div>
+      ) : (
+        <label data-testid={testid} className="flex h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-700 bg-[#0A0D14] text-slate-500 hover:border-[#FF2E2E] hover:text-[#FF6B6B] transition-colors">
+          {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Icon className="h-6 w-6" />}
+          <span className="text-xs font-semibold">{uploading ? "Mengunggah..." : "Pilih / Ambil Foto"}</span>
+          <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => onSelect(e.target.files?.[0])} />
+        </label>
+      )}
+    </div>
+  );
+}
+
 export default function CashierPanel() {
   const [view, setView] = useState("calc"); // calc | riwayat
   const [letters, setLetters] = useState([]);
@@ -77,6 +98,8 @@ export default function CashierPanel() {
   const [sales, setSales] = useState([]);
   const [loadingSales, setLoadingSales] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [previewImg, setPreviewImg] = useState(null);
+  const [uploading, setUploading] = useState({ foto_produk: false, bukti_transfer: false });
   const [summary, setSummary] = useState({ total_transactions: 0, total_revenue: 0, total_margin: 0, today_transactions: 0, today_revenue: 0, today_margin: 0 });
 
   const digits = useMemo(() => lettersToDigits(letters), [letters]);
@@ -132,9 +155,43 @@ export default function CashierPanel() {
       harga_modal: s.harga_modal || 0, margin: s.margin || 0,
       metode_pembayaran: s.metode_pembayaran || "", sudah_diambil: s.sudah_diambil || "",
       metode_pengambilan: s.metode_pengambilan || "", alamat_pengiriman: s.alamat_pengiriman || "",
+      foto_produk: s.foto_produk || "", bukti_transfer: s.bukti_transfer || "",
       _rawTanggal: s.tanggal_penjualan,
     });
     setShowForm(true);
+  };
+
+  const handleUpload = async (field, file) => {
+    if (!file) return;
+    setUploading((u) => ({ ...u, [field]: true }));
+    try {
+      const url = await uploadImage(file);
+      setForm((f) => ({ ...f, [field]: url }));
+      toast.success("Foto terunggah");
+    } catch {
+      toast.error("Gagal mengunggah foto");
+    } finally {
+      setUploading((u) => ({ ...u, [field]: false }));
+    }
+  };
+
+  const shareWA = (s) => {
+    const lines = [
+      "*SK BIKE STORE*",
+      s.nama_barang ? `Barang: ${s.nama_barang}` : null,
+      s.kode_barang ? `Kode: ${s.kode_barang}` : null,
+      s.ukuran_warna ? `Ukuran/Warna: ${s.ukuran_warna}` : null,
+      `Harga: ${rupiah(s.harga_jual)}`,
+      s.metode_pembayaran ? `Pembayaran: ${s.metode_pembayaran}` : null,
+      s.sudah_diambil ? `Status: ${s.sudah_diambil} diambil` : null,
+      s.metode_pengambilan ? `Pengambilan: ${s.metode_pengambilan}` : null,
+      s.alamat_pengiriman ? `Alamat: ${s.alamat_pengiriman}` : null,
+      s.tanggal_penjualan ? `Tanggal: ${s.tanggal_penjualan}` : null,
+      s.nama_pembeli ? `Pembeli: ${s.nama_pembeli}` : null,
+      s.foto_produk ? `Foto Produk: ${resolveImage(s.foto_produk)}` : null,
+      s.bukti_transfer ? `Bukti Transfer: ${resolveImage(s.bukti_transfer)}` : null,
+    ].filter(Boolean);
+    window.open(`https://wa.me/?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
   };
 
   const formJual = (Number(form.harga_modal) || 0) + (Number(form.margin) || 0);
@@ -155,6 +212,8 @@ export default function CashierPanel() {
       sudah_diambil: form.sudah_diambil || null,
       metode_pengambilan: form.metode_pengambilan || null,
       alamat_pengiriman: form.alamat_pengiriman || null,
+      foto_produk: form.foto_produk || null,
+      bukti_transfer: form.bukti_transfer || null,
     };
     try {
       if (editId) { await updateSale(editId, payload); toast.success("Perubahan tersimpan"); }
@@ -336,12 +395,19 @@ export default function CashierPanel() {
                     <p className="text-xs text-slate-500 mt-0.5">
                       {s.tanggal_penjualan || "-"}{s.nama_pembeli ? ` • ${s.nama_pembeli}` : ""}{s.kode_barang ? ` • ${s.kode_barang}` : ""}
                     </p>
+                    {(s.foto_produk || s.bukti_transfer) && (
+                      <div className="flex gap-2 mt-2">
+                        {s.foto_produk && <img src={resolveImage(s.foto_produk)} alt="Foto produk" onClick={() => setPreviewImg(resolveImage(s.foto_produk))} data-testid={`cashier-thumb-produk-${s.id}`} className="h-12 w-12 cursor-pointer rounded-lg border border-slate-700 object-cover hover:border-[#FF2E2E] transition-colors" />}
+                        {s.bukti_transfer && <img src={resolveImage(s.bukti_transfer)} alt="Bukti transfer" onClick={() => setPreviewImg(resolveImage(s.bukti_transfer))} data-testid={`cashier-thumb-transfer-${s.id}`} className="h-12 w-12 cursor-pointer rounded-lg border border-slate-700 object-cover hover:border-[#FF2E2E] transition-colors" />}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-[#FF2E2E] font-mono-tech">{rupiah(s.harga_jual)}</p>
                     <p className="text-[11px] text-slate-500">margin {rupiah(s.margin)}</p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
+                    <button data-testid={`cashier-share-sale-${s.id}`} onClick={() => shareWA(s)} title="Bagikan ke WhatsApp" className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:border-[#10B981] hover:text-[#10B981] transition-colors"><Share2 className="h-4 w-4" /></button>
                     <button data-testid={`cashier-edit-sale-${s.id}`} onClick={() => openEdit(s)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors"><Pencil className="h-4 w-4" /></button>
                     <button data-testid={`cashier-delete-sale-${s.id}`} onClick={() => setDeleteTarget(s.id)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:border-red-500 hover:text-red-400 transition-colors"><Trash2 className="h-4 w-4" /></button>
                   </div>
@@ -403,6 +469,10 @@ export default function CashierPanel() {
               <div><label className={labelCls}>Apakah sudah diambil?</label><Segmented testid="sell-diambil" value={form.sudah_diambil} onChange={(v) => setForm({ ...form, sudah_diambil: v })} options={["Belum", "Sudah"]} /></div>
               <div><label className={labelCls}>Metode Pengambilan</label><Segmented testid="sell-pengambilan" value={form.metode_pengambilan} onChange={(v) => setForm({ ...form, metode_pengambilan: v })} options={["Pick up Sendiri", "Travel"]} /></div>
               <div><label className={labelCls}>Alamat Pengiriman</label><textarea data-testid="sell-alamat" value={form.alamat_pengiriman} onChange={(e) => setForm({ ...form, alamat_pengiriman: e.target.value })} placeholder="Alamat lengkap pengiriman" rows={2} className={`${inputCls} resize-none`} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <PhotoUpload label="Foto Produk" testid="sell-foto-produk" icon={ImagePlus} value={form.foto_produk} uploading={uploading.foto_produk} onSelect={(f) => handleUpload("foto_produk", f)} onRemove={() => setForm({ ...form, foto_produk: "" })} />
+                <PhotoUpload label="Bukti Transfer" testid="sell-bukti-transfer" icon={Camera} value={form.bukti_transfer} uploading={uploading.bukti_transfer} onSelect={(f) => handleUpload("bukti_transfer", f)} onRemove={() => setForm({ ...form, bukti_transfer: "" })} />
+              </div>
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -413,6 +483,13 @@ export default function CashierPanel() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {previewImg && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90" onClick={() => setPreviewImg(null)}>
+          <button onClick={() => setPreviewImg(null)} className="absolute top-5 right-5 text-white/80 hover:text-white"><X className="h-6 w-6" /></button>
+          <img data-testid="cashier-image-preview" src={previewImg} alt="Preview" onClick={(e) => e.stopPropagation()} className="max-h-[90vh] max-w-full rounded-xl object-contain" />
         </div>
       )}
 

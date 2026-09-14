@@ -208,11 +208,13 @@ class SaleCreate(BaseModel):
     sudah_diambil: Optional[str] = None
     metode_pengambilan: Optional[str] = None
     alamat_pengiriman: Optional[str] = None
+    foto_produk: Optional[str] = None
+    bukti_transfer: Optional[str] = None
 
 SALE_FIELDS = [
     "tanggal_penjualan", "nama_pembeli", "nama_barang", "kode_barang", "ukuran_warna",
     "kode_huruf", "harga_modal", "harga_jual", "margin", "metode_pembayaran",
-    "sudah_diambil", "metode_pengambilan", "alamat_pengiriman",
+    "sudah_diambil", "metode_pengambilan", "alamat_pengiriman", "foto_produk", "bukti_transfer",
 ]
 
 def sale_public(doc: dict) -> dict:
