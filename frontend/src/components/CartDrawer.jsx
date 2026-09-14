@@ -2,21 +2,15 @@ import { useCart } from "../context/CartContext";
 import { resolveImage } from "../lib/api";
 import { ShoppingCart, X, Plus, Minus, Trash2, MessageCircle } from "lucide-react";
 
-const rupiah = (n) => "Rp " + new Intl.NumberFormat("id-ID").format(Number(n) || 0);
-
 export function CartDrawer({ waNumber }) {
-  const { items, open, setOpen, updateQty, removeItem, clearCart, totalItems, totalPrice } = useCart();
+  const { items, open, setOpen, updateQty, removeItem, clearCart, totalItems } = useCart();
 
   const checkout = () => {
     if (items.length === 0) return;
-    const lines = items.map((it, i) => {
-      const price = it.price > 0 ? rupiah(it.price * it.qty) : "harga menyusul";
-      return `${i + 1}. ${it.name} (${it.category}) x${it.qty} - ${price}`;
-    });
-    const totalLine = totalPrice > 0 ? `\n\nTotal: ${rupiah(totalPrice)}` : "";
+    const lines = items.map((it, i) => `${i + 1}. ${it.name} (${it.category}) x${it.qty}`);
     const msg =
-      `Halo Admin SK Bike, saya ingin memesan:\n\n${lines.join("\n")}${totalLine}` +
-      `\n\nMohon info ketersediaan & proses selanjutnya. Terima kasih!`;
+      `Halo Admin SK Bike, saya ingin memesan:\n\n${lines.join("\n")}` +
+      `\n\nMohon info harga, ketersediaan & proses selanjutnya. Terima kasih!`;
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`, "_blank");
     setOpen(false);
   };
@@ -86,7 +80,6 @@ export function CartDrawer({ waNumber }) {
                 <div className="flex flex-1 flex-col min-w-0">
                   <p className="text-[10px] uppercase tracking-wider text-[#FF2E2E]">{it.category}</p>
                   <p className="font-heading font-bold text-white text-sm leading-snug truncate">{it.name}</p>
-                  <p className="text-sm text-slate-300 mt-0.5">{it.price > 0 ? rupiah(it.price) : "Harga menyusul"}</p>
 
                   <div className="mt-auto pt-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -127,11 +120,10 @@ export function CartDrawer({ waNumber }) {
         {items.length > 0 && (
           <div className="border-t border-slate-800 bg-[#111723] px-5 py-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-400">Total ({totalItems} item)</span>
-              <span data-testid="cart-total" className="font-heading text-xl font-black text-white italic">
-                {totalPrice > 0 ? rupiah(totalPrice) : "Cek harga"}
-              </span>
+              <span className="text-sm text-slate-400">Total item</span>
+              <span data-testid="cart-total" className="font-heading text-xl font-black text-white italic">{totalItems}</span>
             </div>
+            <p className="text-[11px] text-slate-500">Harga & total akan dikonfirmasi oleh admin via WhatsApp.</p>
             <button
               data-testid="cart-checkout-btn"
               onClick={checkout}

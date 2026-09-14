@@ -180,7 +180,6 @@ def product_public(doc: dict) -> dict:
         "name": doc.get("name"),
         "category": doc.get("category"),
         "description": doc.get("description", ""),
-        "price": doc.get("price", 0),
         "stock": doc.get("stock", 0),
         "status": doc.get("status", "Tersedia"),
         "image_url": doc.get("image_url", ""),
@@ -189,6 +188,7 @@ def product_public(doc: dict) -> dict:
 
 def product_admin(doc: dict) -> dict:
     pub = product_public(doc)
+    pub["price"] = doc.get("price", 0)
     pub["cost_price"] = doc.get("cost_price", 0)
     pub["code"] = doc.get("code", "")
     return pub

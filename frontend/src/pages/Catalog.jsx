@@ -23,6 +23,9 @@ const PRICE_RANGES = [
 
 const rupiah = (n) => new Intl.NumberFormat("id-ID").format(Number(n) || 0);
 
+// Harga Jual tidak diekspos ke publik -> filter rentang harga dinonaktifkan (kode tetap disimpan).
+const SHOW_PRICE_FILTER = false;
+
 export default function Catalog() {
   const { waNumber } = useOutletContext();
   const [products, setProducts] = useState([]);
@@ -131,6 +134,7 @@ export default function Catalog() {
         </div>
 
         {/* Rentang Harga */}
+        {SHOW_PRICE_FILTER && (
         <div>
           <span className="flex items-center gap-2 text-xs uppercase tracking-wider text-slate-500 mb-3"><Wallet className="h-3.5 w-3.5 text-[#FF2E2E]" /> Rentang Harga</span>
           <div className="flex flex-wrap gap-2.5">
@@ -177,6 +181,7 @@ export default function Catalog() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Urutkan + Reset */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-800/80 pt-5">
