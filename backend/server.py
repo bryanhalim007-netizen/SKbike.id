@@ -79,6 +79,31 @@ async def get_current_user(request: Request) -> dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token tidak valid")
 
+# ---------------- Brute force protection ----------------
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_MINUTES = 15
+
+async def check_lockout(identifier: str):
+    rec = await db.login_attempts.find_one({"identifier": identifier})
+    if rec and rec.get("count", 0) >= MAX_FAILED_ATTEMPTS:
+        locked_until = rec.get("locked_until")
+        if locked_until:
+            lu = datetime.fromisoformat(locked_until)
+            if lu > datetime.now(timezone.utc):
+                remaining = int((lu - datetime.now(timezone.utc)).total_seconds() // 60) + 1
+                raise HTTPException(status_code=429, detail=f"Terlalu banyak percobaan gagal. Coba lagi dalam {remaining} menit.")
+
+async def register_failed_attempt(identifier: str):
+    rec = await db.login_attempts.find_one({"identifier": identifier})
+    count = (rec.get("count", 0) if rec else 0) + 1
+    update = {"count": count, "last_attempt": datetime.now(timezone.utc).isoformat()}
+    if count >= MAX_FAILED_ATTEMPTS:
+        update["locked_until"] = (datetime.now(timezone.utc) + timedelta(minutes=LOCKOUT_MINUTES)).isoformat()
+    await db.login_attempts.update_one({"identifier": identifier}, {"$set": update}, upsert=True)
+
+async def clear_failed_attempts(identifier: str):
+    await db.login_attempts.delete_one({"identifier": identifier})
+
 # ---------------- Object storage ----------------
 STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
 STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
@@ -174,16 +199,43 @@ class LoginInput(BaseModel):
     password: str
 
 @api_router.post("/auth/login")
-async def login(payload: LoginInput, response: Response):
+async def login(payload: LoginInput, request: Request, response: Response):
     email = payload.email.lower()
+    fwd = request.headers.get("X-Forwarded-For", "")
+    ip = (fwd.split(",")[0].strip() if fwd else "") or request.headers.get("X-Real-IP", "") or (request.client.host if request.client else "unknown")
+    identifier = f"{ip}:{email}"
+    await check_lockout(identifier)
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(payload.password, user["password_hash"]):
+        await register_failed_attempt(identifier)
         raise HTTPException(status_code=401, detail="Email atau kata sandi salah")
+    await clear_failed_attempts(identifier)
     uid = str(user["_id"])
     access = create_access_token(uid, email)
     refresh = create_refresh_token(uid)
     set_auth_cookies(response, access, refresh)
     return {"id": uid, "email": email, "name": user.get("name", "Admin"), "role": user.get("role", "admin"), "token": access}
+
+@api_router.post("/auth/refresh")
+async def refresh_token(request: Request, response: Response):
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Tidak ada token refresh")
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Tipe token tidak valid")
+        user = await db.users.find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            raise HTTPException(status_code=401, detail="Pengguna tidak ditemukan")
+        uid = str(user["_id"])
+        access = create_access_token(uid, user["email"])
+        response.set_cookie(key="access_token", value=access, httponly=True, secure=True, samesite="none", max_age=3600, path="/")
+        return {"id": uid, "email": user["email"], "name": user.get("name", "Admin"), "role": user.get("role", "admin"), "token": access}
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Sesi berakhir, silakan masuk lagi")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token tidak valid")
 
 @api_router.post("/auth/logout")
 async def logout(response: Response):
@@ -417,6 +469,7 @@ async def seed_products():
 @app.on_event("startup")
 async def startup():
     await db.users.create_index("email", unique=True)
+    await db.login_attempts.create_index("identifier")
     await seed_admin()
     await seed_products()
     try:

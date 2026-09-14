@@ -105,6 +105,23 @@
 user_problem_statement: "Toko sepeda SK Bike. Perubahan terbaru: pisah halaman (Home/Katalog/Find Us), filter kategori+rentang harga, fitur keranjang (WhatsApp checkout), badge ukuran roda, dan penambahan Harga Modal (cost_price) + Harga Jual (price) dengan crop gambar 4:3 di ProductForm."
 
 backend:
+  - task: "Admin login auth: refresh endpoint + brute-force protection"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added POST /api/auth/refresh and brute-force protection (5 fails => 15min lockout, 429)."
+        - working: false
+          agent: "testing"
+          comment: "7/8 passed. Brute-force failed in prod: request.client.host returns rotating k8s proxy IPs so attempts split across IPs, threshold never hit."
+        - working: true
+          agent: "main"
+          comment: "FIXED: identifier now uses X-Forwarded-For (first IP) -> X-Real-IP -> client.host. Re-verified via curl: 6th failed attempt for same X-Forwarded-For => 429; real admin still logs in 200. Full UI login flow verified reaching /admin dashboard. login/refresh/me/logout all pass."
   - task: "Public products expose selling price (price)"
     implemented: true
     working: true
@@ -161,17 +178,20 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
+  test_sequence: 3
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Admin login auth: refresh endpoint + brute-force protection"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
-      message: "Please test backend only. 1) GET /api/products must include 'price' but NOT 'cost_price'. 2) Admin login (bryan.halim007@gmail.com / velox2026), then POST /api/admin/products with cost_price and price -> verify both persist and are returned by GET /api/admin/products. 3) PUT /api/admin/products/{id} updating cost_price and price -> verify persisted. Do not test frontend."
+      message: "NEW AUTH TEST REQUEST. Test backend AUTH only (read /app/auth_testing.md). Admin: bryan.halim007@gmail.com / velox2026. Verify: 1) POST /api/auth/login returns user+token and sets access_token+refresh_token cookies. 2) GET /api/auth/me works via cookie AND via Authorization Bearer token. 3) NEW POST /api/auth/refresh: with valid refresh_token cookie returns a new access token + sets access_token cookie; without/invalid refresh cookie returns 401. 4) Brute-force: 5 failed logins for the SAME throwaway email (e.g. bruteforce_test@x.com to avoid locking the real admin) then 6th returns HTTP 429. 5) POST /api/auth/logout clears cookies. Do NOT test frontend."
     - agent: "testing"
       message: "✅ ALL BACKEND TESTS PASSED (6/6). Product pricing implementation is correct: (1) Public endpoint GET /api/products correctly exposes 'price' and hides 'cost_price' and 'code' for all products. (2) Admin create POST /api/admin/products successfully persists both price and cost_price. (3) Admin list GET /api/admin/products correctly returns price, cost_price, and code. (4) Admin update PUT /api/admin/products/{id} successfully updates both price and cost_price. (5) Public endpoint verified to show updated price while maintaining cost_price privacy. No issues found. Backend implementation complete and working correctly."
+    - agent: "testing"
+      message: "AUTH TESTING COMPLETE (7/8 tests passed). All core auth endpoints working correctly: login with cookies+token, /me with both auth methods, refresh token, logout. CRITICAL BUG FOUND: Brute-force protection fails in production due to load balancer IP rotation. Identifier uses request.client.host which returns proxy IPs (10.208.134.74, 10.208.134.75) that change between requests, preventing lockout from triggering. Fix required: Use X-Forwarded-For header or email-only identifier. See task status_history for detailed test results and MongoDB evidence."

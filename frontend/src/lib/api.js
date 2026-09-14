@@ -5,6 +5,31 @@ export const API = `${BACKEND_URL}/api`;
 
 export const api = axios.create({ baseURL: API, withCredentials: true });
 
+// Auto-refresh: jika akses token kedaluwarsa (401), coba refresh sekali lalu ulangi request.
+let refreshPromise = null;
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config || {};
+    const status = error?.response?.status;
+    const url = original.url || "";
+    const isAuthCall = url.includes("/auth/login") || url.includes("/auth/refresh");
+    if (status === 401 && !original._retry && !isAuthCall) {
+      original._retry = true;
+      try {
+        refreshPromise = refreshPromise || api.post("/auth/refresh");
+        await refreshPromise;
+        refreshPromise = null;
+        return api(original);
+      } catch (e) {
+        refreshPromise = null;
+        return Promise.reject(error);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Kategori tetap (selaras dengan backend) agar tab kategori tidak menunggu request.
 export const CATEGORIES = [
   "Sepeda Listrik", "Sepeda Gunung", "BMX", "Sepeda Anak",
