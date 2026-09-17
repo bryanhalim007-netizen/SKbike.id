@@ -34,6 +34,8 @@ Import project SKbike.id dari GitHub (branch main1), setup & install dependencie
   - Tombol Bagikan produk: WhatsApp share + Salin Link (clipboard)
   - Verified via screenshot + API
 
+- 2026-06 (re-import): Clone `main1` ke Emergent /app container (mobile/APK dikecualikan). Backend pip deps terinstall (requirements.txt bersih, tanpa litellm), frontend `yarn install` OK. `.env` backend dilengkapi: JWT_SECRET acak, ADMIN_EMAIL/PASSWORD, WHATSAPP_NUMBER, EMERGENT_LLM_KEY, FRONTEND_URL. Verifikasi lolos (testing_agent): /api/config 200, 10 produk, login admin, dashboard admin, storefront.
+
 ## Backlog (P1/P2)
 - Section testimoni/galeri di beranda
 - Halaman detail produk penuh (saat ini modal)
