@@ -1,0 +1,17 @@
+{
+  "short_name": "SK BIKE",
+  "name": "SK BIKE - Katalog Sepeda & Sepeda Listrik",
+  "description": "Katalog sepeda gunung, BMX, sepeda anak, lipat, listrik, road bike & mini trail. Panel admin offline.",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" },
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable" }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0A0D14",
+  "background_color": "#0A0D14",
+  "lang": "id"
+}

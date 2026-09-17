@@ -1,0 +1,28 @@
+{
+  "summary": "Verified the two new SK Bike features (Product Detail page + admin table sorting/low-stock filter). Backend: created and ran 4 new pytest cases in /app/backend/tests/test_product_detail_public.py — all pass. Public list and GET /api/products/{id} return NO 'price' or 'cost_price' (or price on sizes). Invalid ObjectId returns 404; malformed id returns 4xx (400/404/422). Frontend: /katalog product-title click navigates to /produk/<id>; detail page renders all required testids (detail-main-image, detail-product-name, detail-status, detail-specs, detail-add-cart, detail-wa-inquire); page contains no 'Rp <digits>' text (price-less confirmed). For simple product (single 'Standar' variant, no sizes) Add-to-Cart works immediately and shows success toast + cart count increments. Invalid /produk/000000000000000000000000 shows friendly 'Produk tidak ditemukan' state with detail-back-to-catalog link visible. Admin: login admin@skbike.id/Admin@12345 + PIN 1614 unlocked Produk tab. admin-sort-price toggles asc/desc (verified 1.45M -> 22.5M ordering); admin-sort-stock toggles asc/desc (0 -> 25); admin-lowstock-filter narrows table to only stock<=3 items (1 product, matching red badge count '1'); toggling off restores all 10 rows.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_product_detail_public.py",
+    "/app/test_reports/pytest/product_detail_public.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All 10 seeded products have a single variant with color='Standar' (filtered by ProductDetail as non-color) and empty sizes[]. This means the color-chip / size-chip / multi-image-gallery UI branches of ProductDetail.jsx could not be exercised end-to-end with the current seed. Code review confirms the logic (colorVariants filter, hasSizes gate on pickerColors, gallery.length>1 render guard, canConfirm rule, 'Pilih warna/ukuran dulu' toast) is correct, but recommend adding at least one seeded product with multiple real color variants (each with image_url) and one with sizes to enable full regression coverage.",
+    "ProductDetail passes a fabricated code (selSize?.code || product.code) to addItem, but product_public() intentionally does not expose 'code'. For a sized product the size.code path is used; for a non-sized product product.code is always undefined in cart items — safe but be aware if downstream Cart depends on code.",
+    "server.py is still 2588 lines; the /produk detail work adds ~10 lines. Splitting into routers remains a maintainability improvement (already flagged in iteration_1)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_product_detail_public.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@skbike.id / Admin@12345; Produk PIN 1614 (buttons have data-testid='pin-produk-key-<digit>')",
+  "seed_data_creation": "None. Used 10 existing seeded products. Note limitation above about lack of multi-variant/multi-image seed.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Public product endpoint /api/products/{id} returns product_public shape (no price / no cost_price / sizes stripped of price). Invalid ObjectId -> 404. On /produk/:id the presence of a rendered price would be a regression. To exercise color/size UI paths in ProductDetail, either seed a product with real color variants (color != 'Standar' and image_url per variant) plus non-empty sizes[], or create one via admin API. Admin table sort testids: admin-sort-price, admin-sort-stock (toggle asc/desc on each click, arrow icon indicates state). Low-stock filter testid admin-lowstock-filter shows a red count badge when >0 items are at stock <= 3; clicking narrows rows and clicking again restores. Baseline seed has exactly 1 low-stock product (SK Kids Explorer 20, stock 0)."
+}
