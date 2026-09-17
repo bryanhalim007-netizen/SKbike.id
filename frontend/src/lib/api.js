@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
 
 export const api = axios.create({ baseURL: API, withCredentials: true });
@@ -52,6 +52,31 @@ export function formatApiErrorDetail(detail) {
 // ---- Public ----
 export async function getConfig() {
   const { data } = await api.get("/config");
+  return data;
+}
+export async function getCategories() {
+  const { data } = await api.get("/categories");
+  return data;
+}
+// ---- Admin: kategori ----
+export async function listCategoriesAdmin() {
+  const { data } = await api.get("/admin/categories");
+  return data;
+}
+export async function createCategory(payload) {
+  const { data } = await api.post("/admin/categories", payload);
+  return data;
+}
+export async function updateCategory(id, payload) {
+  const { data } = await api.put(`/admin/categories/${id}`, payload);
+  return data;
+}
+export async function deleteCategory(id) {
+  const { data } = await api.delete(`/admin/categories/${id}`);
+  return data;
+}
+export async function reorderCategories(order) {
+  const { data } = await api.put("/admin/categories/reorder", { order });
   return data;
 }
 export async function getProducts({ sort } = {}) {

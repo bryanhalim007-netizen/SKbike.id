@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useOutletContext, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { getProduct, getProducts, resolveImage } from "../lib/api";
+import { getProduct, getProducts, resolveImage, BACKEND_URL } from "../lib/api";
+import { useSeo } from "../hooks/useSeo";
 import { ProductCard } from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
 import { toast } from "sonner";
@@ -48,13 +49,26 @@ export default function ProductDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const shareUrl = `${BACKEND_URL}/api/share/produk/${id}`;
+  useSeo(
+    product
+      ? {
+          title: product.name,
+          description: product.description || `${product.name} — ${product.category} tersedia di SK Bike Store Ketapang. Chat admin via WhatsApp untuk info harga & stok.`,
+          image: resolveImage(product.image_url),
+          url: `${window.location.origin}/produk/${id}`,
+          type: "product",
+        }
+      : {}
+  );
+
   const shareWhatsApp = () => {
-    const msg = encodeURIComponent(`Cek sepeda ini dari SK Bike: *${product.name}*\n${window.location.href}`);
+    const msg = encodeURIComponent(`Cek sepeda ini dari SK Bike: *${product.name}*\n${shareUrl}`);
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareUrl);
       toast.success("Link produk disalin ke clipboard");
     } catch {
       toast.error("Gagal menyalin link");

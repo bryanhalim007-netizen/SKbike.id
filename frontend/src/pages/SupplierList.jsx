@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { listSuppliers, adminProducts, listPurchaseOrders, exportSupplier, setPurchaseOrderPaid, resolveImage } from "../lib/api";
+import { SupplierModal } from "../components/SupplierModal";
 import { toast } from "sonner";
 import {
   Factory, Building2, Loader2, ChevronDown, Phone, MapPin, StickyNote, PackageX, Boxes,
-  Search, Wallet, ShoppingBag, Clock, PackageCheck, ArrowDownWideNarrow, FileSpreadsheet, CircleDollarSign, CheckCircle2,
+  Search, Wallet, ShoppingBag, Clock, PackageCheck, ArrowDownWideNarrow, FileSpreadsheet, CircleDollarSign, CheckCircle2, Plus, Pencil,
 } from "lucide-react";
 
 const rupiah = (n) => "Rp " + (Number(n) || 0).toLocaleString("id-ID");
@@ -30,6 +31,7 @@ export default function SupplierList() {
   const [sortBy, setSortBy] = useState("spend");
   const [exportingId, setExportingId] = useState(null);
   const [payBusy, setPayBusy] = useState(null);
+  const [supplierModal, setSupplierModal] = useState(null);
 
   const togglePaid = async (o) => {
     const next = !o.paid;
@@ -106,9 +108,12 @@ export default function SupplierList() {
 
   return (
     <div data-testid="supplier-list-panel">
-      <div className="mb-6">
-        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white flex items-center gap-2"><Factory className="h-7 w-7 text-[#FF2E2E]" /> Supplier</h1>
-        <p className="mt-1 text-slate-400 text-sm">Daftar supplier beserta produk yang didaftarkan dengan nama supplier tersebut. Tekan nama supplier untuk melihat detail.</p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white flex items-center gap-2"><Factory className="h-7 w-7 text-[#FF2E2E]" /> Supplier</h1>
+          <p className="mt-1 text-slate-400 text-sm">Daftar supplier beserta produk yang didaftarkan dengan nama supplier tersebut. Tekan nama supplier untuk melihat detail.</p>
+        </div>
+        <button data-testid="supplier-list-add-button" onClick={() => setSupplierModal({})} className="flex items-center justify-center gap-2 rounded-full bg-[#FF2E2E] px-5 py-2.5 text-sm font-bold text-white hover:scale-[1.02] transition-transform shrink-0"><Plus className="h-4 w-4" /> Tambah Supplier</button>
       </div>
 
       <div className="mb-5 flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -142,7 +147,7 @@ export default function SupplierList() {
       ) : filtered.length === 0 ? (
         <div data-testid="supplier-no-results" className="rounded-2xl border border-slate-800 bg-[#111723] py-16 text-center text-slate-500 text-sm">
           {suppliers.length === 0
-            ? <>Belum ada supplier. Tambahkan supplier di menu <span className="text-slate-300 font-semibold">Pembelian → Supplier</span>.</>
+            ? <>Belum ada supplier. Klik <span className="text-slate-300 font-semibold">Tambah Supplier</span> di atas untuk membuat yang pertama.</>
             : <>Tidak ada supplier atau produk yang cocok dengan "<span className="text-slate-300 font-semibold">{search}</span>".</>}
         </div>
       ) : (
@@ -198,6 +203,13 @@ export default function SupplierList() {
                           <span><span className="font-bold">{pending.length} pembelian</span> menunggu barang datang. Stok belum ditambahkan sampai barang ditandai <span className="font-bold">Diterima</span> di menu Pembelian.</span>
                         </div>
                       ) : <div className="flex-1" />}
+                      <button
+                        data-testid={`supplier-list-edit-${s.id}`}
+                        onClick={() => setSupplierModal(s)}
+                        className="flex items-center justify-center gap-2 rounded-full border border-slate-700 bg-[#161F2E] px-5 py-2.5 text-sm font-semibold text-white hover:border-[#FF2E2E] hover:text-[#FF2E2E] transition-colors shrink-0"
+                      >
+                        <Pencil className="h-4 w-4" /> Edit
+                      </button>
                       <button
                         data-testid={`supplier-export-${s.id}`}
                         onClick={() => doExport(s)}
@@ -312,6 +324,7 @@ export default function SupplierList() {
           })}
         </div>
       )}
+      {supplierModal && <SupplierModal supplier={supplierModal} onClose={() => setSupplierModal(null)} onSaved={() => { setSupplierModal(null); load(); }} />}
     </div>
   );
 }

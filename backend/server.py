@@ -17,6 +17,8 @@ import uuid
 import io
 import csv
 import json
+import html
+import re
 import bcrypt
 import jwt
 import requests
@@ -801,14 +803,152 @@ async def list_attendance(employee_id: str, user: dict = Depends(get_current_use
     docs = await db.attendance.find({"employee_id": employee_id}).sort("date", -1).to_list(400)
     return [{"id": d.get("id"), "date": d.get("date"), "status": d.get("status"), "updated_at": d.get("updated_at")} for d in docs]
 
+# ---------------- Kategori (dinamis) ----------------
+DEFAULT_CATEGORY_TILES = {
+    "Sepeda Gunung": ("MTB", "https://images.unsplash.com/photo-1594942939850-d8da299577f3?crop=entropy&cs=srgb&fm=jpg&q=85&w=800"),
+    "Sepeda Listrik": ("E-Bike", "https://images.unsplash.com/photo-1620802051782-725fa33db067?crop=entropy&cs=srgb&fm=jpg&q=85&w=800"),
+    "BMX": ("Freestyle", "https://images.unsplash.com/photo-1628549575837-614973afa6e7?crop=entropy&cs=srgb&fm=jpg&q=85&w=800"),
+    "Road Bike": ("Speed", "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?crop=entropy&cs=srgb&fm=jpg&q=85&w=800"),
+    "Sepeda Lipat": ("Compact", "https://images.pexels.com/photos/6558832/pexels-photo-6558832.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=800"),
+    "Sepeda Anak": ("Kids", "https://images.unsplash.com/photo-1595182747080-3b43712dd27d?crop=entropy&cs=srgb&fm=jpg&q=85&w=800"),
+}
+
+class CategoryCreate(BaseModel):
+    name: str
+    tag: Optional[str] = ""
+    image_url: Optional[str] = ""
+    show_on_home: bool = True
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    tag: Optional[str] = None
+    image_url: Optional[str] = None
+    show_on_home: Optional[bool] = None
+    archived: Optional[bool] = None
+
+class CategoryReorder(BaseModel):
+    order: List[str]
+
+def category_public(d: dict, product_count: int = None) -> dict:
+    out = {
+        "id": d.get("id"),
+        "name": d.get("name", ""),
+        "tag": d.get("tag", "") or "",
+        "image_url": d.get("image_url", "") or "",
+        "show_on_home": bool(d.get("show_on_home", False)),
+        "archived": bool(d.get("archived", False)),
+        "sort_order": int(d.get("sort_order", 0) or 0),
+    }
+    if product_count is not None:
+        out["product_count"] = product_count
+    return out
+
+async def active_category_names() -> List[str]:
+    docs = await db.categories.find({"archived": {"$ne": True}}).sort("sort_order", 1).to_list(200)
+    return [d["name"] for d in docs]
+
+async def seed_categories():
+    if await db.categories.count_documents({}) > 0:
+        return
+    now = datetime.now(timezone.utc).isoformat()
+    docs = []
+    for i, name in enumerate(CATEGORIES):
+        tag, img = DEFAULT_CATEGORY_TILES.get(name, ("", ""))
+        docs.append({"id": str(uuid.uuid4()), "name": name, "tag": tag, "image_url": img, "show_on_home": name in DEFAULT_CATEGORY_TILES, "archived": False, "sort_order": i, "created_at": now})
+    await db.categories.insert_many(docs)
+    logger.info("Categories seeded")
+
+@api_router.get("/admin/categories")
+async def admin_list_categories(user: dict = Depends(forbid_cashier)):
+    docs = await db.categories.find({}).sort("sort_order", 1).to_list(200)
+    counts = {c["_id"]: c["n"] async for c in db.products.aggregate([{"$group": {"_id": "$category", "n": {"$sum": 1}}}])}
+    return [category_public(d, counts.get(d.get("name"), 0)) for d in docs]
+
+@api_router.post("/admin/categories")
+async def create_category(payload: CategoryCreate, user: dict = Depends(require_super_admin)):
+    name = payload.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Nama kategori wajib diisi")
+    if await db.categories.find_one({"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}}):
+        raise HTTPException(status_code=400, detail="Kategori dengan nama tersebut sudah ada")
+    last = await db.categories.find({}).sort("sort_order", -1).to_list(1)
+    doc = {
+        "id": str(uuid.uuid4()),
+        "name": name,
+        "tag": (payload.tag or "").strip(),
+        "image_url": (payload.image_url or "").strip(),
+        "show_on_home": payload.show_on_home,
+        "archived": False,
+        "sort_order": (int(last[0].get("sort_order", 0)) + 1) if last else 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.categories.insert_one(doc)
+    await log_activity(user, "create", "category", f"Tambah kategori {name}", doc["id"])
+    return category_public(doc, 0)
+
+@api_router.put("/admin/categories/reorder")
+async def reorder_categories(payload: CategoryReorder, user: dict = Depends(require_super_admin)):
+    for idx, cid in enumerate(payload.order):
+        await db.categories.update_one({"id": cid}, {"$set": {"sort_order": idx}})
+    return {"ok": True}
+
+@api_router.put("/admin/categories/{category_id}")
+async def update_category(category_id: str, payload: CategoryUpdate, user: dict = Depends(require_super_admin)):
+    doc = await db.categories.find_one({"id": category_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Kategori tidak ditemukan")
+    updates = {}
+    if payload.name is not None:
+        name = payload.name.strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="Nama kategori wajib diisi")
+        dup = await db.categories.find_one({"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}, "id": {"$ne": category_id}})
+        if dup:
+            raise HTTPException(status_code=400, detail="Kategori dengan nama tersebut sudah ada")
+        updates["name"] = name
+    for field in ("tag", "image_url"):
+        val = getattr(payload, field)
+        if val is not None:
+            updates[field] = val.strip()
+    for field in ("show_on_home", "archived"):
+        val = getattr(payload, field)
+        if val is not None:
+            updates[field] = bool(val)
+    if updates:
+        await db.categories.update_one({"id": category_id}, {"$set": updates})
+        if "name" in updates and updates["name"] != doc.get("name"):
+            await db.products.update_many({"category": doc.get("name")}, {"$set": {"category": updates["name"]}})
+        if "archived" in updates:
+            await log_activity(user, "update", "category", f"{'Arsipkan' if updates['archived'] else 'Aktifkan'} kategori {updates.get('name', doc.get('name'))}", category_id)
+    doc = await db.categories.find_one({"id": category_id})
+    count = await db.products.count_documents({"category": doc.get("name")})
+    return category_public(doc, count)
+
+@api_router.delete("/admin/categories/{category_id}")
+async def delete_category(category_id: str, user: dict = Depends(require_super_admin)):
+    doc = await db.categories.find_one({"id": category_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Kategori tidak ditemukan")
+    count = await db.products.count_documents({"category": doc.get("name")})
+    if count > 0:
+        raise HTTPException(status_code=400, detail=f"Kategori masih dipakai {count} produk. Arsipkan saja atau pindahkan produknya dulu.")
+    await db.categories.delete_one({"id": category_id})
+    await log_activity(user, "delete", "category", f"Hapus kategori {doc.get('name')}", category_id)
+    return {"ok": True}
+
 # ---------------- Public routes ----------------
 @api_router.get("/config")
 async def get_config():
-    return {"whatsapp_number": WHATSAPP_NUMBER, "categories": CATEGORIES}
+    return {"whatsapp_number": WHATSAPP_NUMBER, "categories": await active_category_names()}
+
+@api_router.get("/categories")
+async def list_categories_public():
+    docs = await db.categories.find({"archived": {"$ne": True}}).sort("sort_order", 1).to_list(200)
+    return [category_public(d) for d in docs]
 
 @api_router.get("/products")
 async def list_products(category: Optional[str] = None, sort: Optional[str] = None):
-    q = {}
+    q = {"category": {"$in": await active_category_names()}}
     if category and category != "Semua":
         q["category"] = category
     if sort == "price_asc":
@@ -829,6 +969,46 @@ async def get_product_public(product_id: str):
     if not doc:
         raise HTTPException(status_code=404, detail="Produk tidak ditemukan")
     return product_public(doc)
+
+
+@api_router.get("/share/produk/{product_id}")
+async def share_product_page(product_id: str, request: Request):
+    try:
+        doc = await db.products.find_one({"_id": ObjectId(product_id)})
+    except Exception:
+        doc = None
+    if not doc:
+        raise HTTPException(status_code=404, detail="Produk tidak ditemukan")
+    site = (os.environ.get("FRONTEND_URL") or str(request.base_url)).rstrip("/")
+    page_url = f"{site}/produk/{product_id}"
+    img = doc.get("image_url") or ""
+    if img.startswith("/"):
+        img = f"{site}{img}"
+    name = html.escape(doc.get("name", "Produk"))
+    category = html.escape(doc.get("category", ""))
+    desc = html.escape((doc.get("description") or f"{doc.get('name', '')} — {category} tersedia di SK Bike Store Ketapang. Chat admin via WhatsApp untuk info harga & stok.")[:200])
+    title = f"{name} | SK Bike Store"
+    page = f"""<!doctype html><html lang="id"><head><meta charset="utf-8">
+<title>{title}</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{page_url}">
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="SK Bike Store">
+<meta property="og:locale" content="id_ID">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{page_url}">
+<meta property="og:image" content="{html.escape(img)}">
+<meta property="og:image:alt" content="{name}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{desc}">
+<meta name="twitter:image" content="{html.escape(img)}">
+<meta http-equiv="refresh" content="0;url={page_url}">
+<script>window.location.replace({json.dumps(page_url)});</script>
+</head><body style="background:#0A0D14;color:#fff;font-family:sans-serif;padding:24px">
+<p>Membuka <a href="{page_url}" style="color:#FF2E2E">{name}</a>…</p></body></html>"""
+    return StarletteResponse(content=page, media_type="text/html; charset=utf-8")
 
 
 @api_router.get("/products/image/{path:path}")
@@ -937,13 +1117,13 @@ def _to_num(v) -> float:
     except (TypeError, ValueError):
         return 0.0
 
-def normalize_import_item(item: dict) -> Optional[dict]:
+def normalize_import_item(item: dict, allowed: List[str]) -> Optional[dict]:
     name = str(item.get("name") or "").strip()
     if not name:
         return None
     category = str(item.get("category") or "").strip()
-    if category not in CATEGORIES:
-        category = CATEGORIES[0]
+    if category not in allowed:
+        category = allowed[0] if allowed else CATEGORIES[0]
     specs = {}
     src_specs = item.get("specs") if isinstance(item.get("specs"), dict) else {}
     for k in EXPORT_SPEC_KEYS:
@@ -1042,7 +1222,8 @@ async def import_products(file: UploadFile = File(...), mode: str = Query("merge
     else:
         raise HTTPException(status_code=400, detail="Format file tidak didukung (gunakan .json, .xlsx, atau .csv)")
 
-    docs = [d for it in items if isinstance(it, dict) for d in [normalize_import_item(it)] if d]
+    allowed = await active_category_names()
+    docs = [d for it in items if isinstance(it, dict) for d in [normalize_import_item(it, allowed)] if d]
     if not docs:
         raise HTTPException(status_code=400, detail="Tidak ada produk valid dalam file")
 
@@ -1082,6 +1263,7 @@ BACKUP_DATASETS = [
     ("services", "Servis"),
     ("purchase_orders", "Pembelian"),
     ("suppliers", "Supplier"),
+    ("categories", "Kategori"),
     ("employees", "Pegawai"),
     ("attendance", "Absensi"),
     ("price_history", "RiwayatHarga"),
@@ -2304,7 +2486,7 @@ async def pos_checkout(payload: PosCheckout, user: dict = Depends(get_current_us
 
 @api_router.post("/admin/products")
 async def create_product(payload: ProductCreate, user: dict = Depends(forbid_cashier)):
-    if payload.category not in CATEGORIES:
+    if payload.category not in await active_category_names():
         raise HTTPException(status_code=400, detail="Kategori tidak valid")
     doc = payload.model_dump()
     doc["specs"] = payload.specs.model_dump()
@@ -2359,7 +2541,7 @@ async def update_product(product_id: str, payload: ProductUpdate, user: dict = D
             agg = aggregate_variants_from_sizes(sizes)
             updates["variants"] = agg
             updates["stock"] = sum(v["stock"] for v in agg)
-    if "category" in updates and updates["category"] not in CATEGORIES:
+    if "category" in updates and updates["category"] != existing.get("category") and updates["category"] not in await active_category_names():
         raise HTTPException(status_code=400, detail="Kategori tidak valid")
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
     # Catat riwayat perubahan harga
@@ -2564,6 +2746,7 @@ async def startup():
     await db.login_attempts.create_index("identifier")
     await seed_admin()
     await seed_products()
+    await seed_categories()
     await migrate_variants()
     try:
         init_storage()

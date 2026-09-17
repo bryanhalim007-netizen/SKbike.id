@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useOutletContext, useSearchParams } from "react-router-dom";
-import { CATEGORIES as CATS, getProducts } from "../lib/api";
+import { getProducts } from "../lib/api";
 import { ProductCard } from "../components/ProductCard";
 import { Search, ArrowDownWideNarrow, ArrowUpNarrowWide, Clock, Wallet, X, SlidersHorizontal, ArrowUp } from "lucide-react";
 
-const CATEGORIES = ["Semua", ...CATS];
 const SORT_OPTIONS = [
   { key: "newest", label: "Terbaru", icon: Clock },
   { key: "price_asc", label: "Murah - Mahal", icon: ArrowUpNarrowWide },
@@ -27,14 +26,12 @@ const rupiah = (n) => new Intl.NumberFormat("id-ID").format(Number(n) || 0);
 const SHOW_PRICE_FILTER = false;
 
 export default function Catalog() {
-  const { waNumber } = useOutletContext();
+  const { waNumber, categories: catList = [] } = useOutletContext();
+  const CATEGORIES = useMemo(() => ["Semua", ...catList.map((c) => c.name)], [catList]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState(() => {
-    const q = searchParams.get("kategori");
-    return q && CATEGORIES.includes(q) ? q : "Semua";
-  });
+  const [category, setCategory] = useState(() => searchParams.get("kategori") || "Semua");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
   const [rangeKey, setRangeKey] = useState("all");
@@ -51,7 +48,7 @@ export default function Catalog() {
 
   useEffect(() => {
     const q = searchParams.get("kategori");
-    if (q && CATEGORIES.includes(q)) setCategory(q);
+    if (q) setCategory(q);
   }, [searchParams]);
 
   useEffect(() => {

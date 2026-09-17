@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import { getProducts } from "../lib/api";
+import { getProducts, resolveImage } from "../lib/api";
 import { ProductCard } from "../components/ProductCard";
 import { Zap, ShieldCheck, Wrench, Truck, ChevronRight, ArrowRight, Star, MessageCircle, MapPin } from "lucide-react";
 
 const HERO_IMG = "https://images.unsplash.com/photo-1535369643553-a33e0d1ac81d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHw0fHxtb3VudGFpbiUyMGJpa2UlMjBiaWN5Y2xlJTIwYWN0aW9uJTIwY3ljbGluZ3xlbnwwfHx8fDE3ODkxOTYxMjJ8MA&ixlib=rb-4.1.0&q=85";
 
 const HERO_STATS = [
-  { value: "8", label: "Kategori", plus: false },
+  { value: "8", label: "Kategori", plus: true },
   { value: "50", label: "Model Sepeda", plus: true },
   { value: "1000", label: "Rider Puas", plus: true },
 ];
@@ -20,17 +20,9 @@ const PERKS = [
   { icon: Truck, title: "Kirim Seluruh Ketapang", desc: "Pengiriman aman sampai tujuan." },
 ];
 
-const CATEGORY_TILES = [
-  { name: "Sepeda Gunung", tag: "MTB", img: "https://images.unsplash.com/photo-1594942939850-d8da299577f3?crop=entropy&cs=srgb&fm=jpg&q=85&w=800" },
-  { name: "Sepeda Listrik", tag: "E-Bike", img: "https://images.unsplash.com/photo-1620802051782-725fa33db067?crop=entropy&cs=srgb&fm=jpg&q=85&w=800" },
-  { name: "BMX", tag: "Freestyle", img: "https://images.unsplash.com/photo-1628549575837-614973afa6e7?crop=entropy&cs=srgb&fm=jpg&q=85&w=800" },
-  { name: "Road Bike", tag: "Speed", img: "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?crop=entropy&cs=srgb&fm=jpg&q=85&w=800" },
-  { name: "Sepeda Lipat", tag: "Compact", img: "https://images.pexels.com/photos/6558832/pexels-photo-6558832.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=800" },
-  { name: "Sepeda Anak", tag: "Kids", img: "https://images.unsplash.com/photo-1595182747080-3b43712dd27d?crop=entropy&cs=srgb&fm=jpg&q=85&w=800" },
-];
-
 export default function Home() {
-  const { waNumber } = useOutletContext();
+  const { waNumber, categories = [] } = useOutletContext();
+  const tiles = categories.filter((c) => c.show_on_home);
   const [featured, setFeatured] = useState([]);
 
   useEffect(() => {
@@ -136,7 +128,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
-          {CATEGORY_TILES.map((c, i) => (
+          {tiles.map((c, i) => (
             <Link
               key={c.name}
               to={`/katalog?kategori=${encodeURIComponent(c.name)}`}
@@ -145,9 +137,13 @@ export default function Home() {
               style={{ animationDelay: `${i * 70}ms` }}
             >
               <div className="relative aspect-[4/3] overflow-hidden">
-                <img src={c.img} alt={c.name} loading="lazy" className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                {c.image_url ? (
+                  <img src={resolveImage(c.image_url)} alt={c.name} loading="lazy" className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                ) : (
+                  <div className="h-full w-full speed-lines bg-[#161F2E] flex items-center justify-center"><span className="font-heading text-4xl font-black italic uppercase text-slate-700/60 group-hover:text-[#FF2E2E]/40 transition-colors">{c.name.slice(0, 2)}</span></div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14] via-[#0A0D14]/40 to-transparent" />
-                <span className="absolute top-0 left-0 skew-tag bg-[#FF2E2E] pl-5 pr-4 py-1 text-[10px] font-mono-tech font-bold uppercase tracking-wider text-white">{c.tag}</span>
+                {c.tag && <span className="absolute top-0 left-0 skew-tag bg-[#FF2E2E] pl-5 pr-4 py-1 text-[10px] font-mono-tech font-bold uppercase tracking-wider text-white">{c.tag}</span>}
                 <span className="absolute bottom-0 left-0 h-1 w-2/3 bg-gradient-to-r from-[#FF2E2E] to-transparent" />
               </div>
               <div className="flex items-center justify-between p-4">

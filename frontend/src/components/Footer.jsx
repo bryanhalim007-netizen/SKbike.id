@@ -6,9 +6,10 @@ const WA_NUMBER = "628125559681";
 const WA_LINK = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Halo Admin SK Bike, saya ingin bertanya tentang produk.")}`;
 const IG_LINK = "https://instagram.com/skbike_ketapang";
 
-const CATEGORIES = ["Sepeda Gunung", "Sepeda Listrik", "BMX", "Road Bike", "Sepeda Lipat", "Sepeda Anak"];
+const FALLBACK_CATEGORIES = ["Sepeda Gunung", "Sepeda Listrik", "BMX", "Road Bike", "Sepeda Lipat", "Sepeda Anak"];
 
-export function Footer() {
+export function Footer({ categories = [] }) {
+  const CATEGORIES = categories.length ? categories.slice(0, 8).map((c) => c.name) : FALLBACK_CATEGORIES;
   return (
     <footer className="relative border-t border-slate-800/80 bg-[#0B0E16] overflow-hidden">
       <div className="absolute inset-0 speed-lines opacity-20 pointer-events-none" />

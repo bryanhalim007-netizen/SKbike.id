@@ -7,6 +7,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "../components/ui/alert-dialog";
 import { BackupControls } from "../components/BackupControls";
+import { CategorySettings } from "../components/CategorySettings";
 
 export default function AdminAccounts() {
   const [admins, setAdmins] = useState([]);
@@ -250,6 +251,9 @@ export default function AdminAccounts() {
           </button>
         </div>
       </div>
+
+      {/* Kategori produk */}
+      <CategorySettings />
 
       {/* Tata letak produk di toko: urutan & produk unggulan */}
       <div data-testid="store-layout-section" className="mt-6 rounded-2xl border border-slate-800 bg-[#111723] p-5">

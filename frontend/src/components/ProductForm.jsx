@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import Cropper from "react-easy-crop";
-import { resolveImage, uploadImage, addProduct, updateProduct, listSuppliers, CATEGORIES } from "../lib/api";
+import { resolveImage, uploadImage, addProduct, updateProduct, listSuppliers, getCategories, CATEGORIES } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { X, Upload, Loader2, Crop as CropIcon, ZoomIn, Palette, Plus, Trash2, Ruler, Tag, Factory, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
@@ -112,7 +112,17 @@ export function ProductForm({ product, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [suppliers, setSuppliers] = useState([]);
-  useEffect(() => { listSuppliers().then(setSuppliers).catch(() => {}); }, []);
+  const [categories, setCategories] = useState(CATEGORIES);
+  useEffect(() => {
+    listSuppliers().then(setSuppliers).catch(() => {});
+    getCategories().then((list) => {
+      const names = (list || []).map((c) => c.name);
+      if (names.length) {
+        setCategories(names);
+        setForm((f) => (names.includes(f.category) ? f : { ...f, category: product?.category && names.includes(product.category) ? product.category : names[0] }));
+      }
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const fileRef = useRef();
   const cropTargetRef = useRef({ type: "main" });
 
@@ -248,7 +258,8 @@ export function ProductForm({ product, onClose, onSaved }) {
           <div>
             <label className="block text-xs uppercase tracking-wider text-slate-400 mb-1.5">Kategori</label>
             <select data-testid="admin-category-select" value={form.category} onChange={(e) => set("category", e.target.value)} className={field}>
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+              {product?.category && !categories.includes(product.category) && <option value={product.category}>{product.category} (diarsipkan)</option>}
             </select>
           </div>
 
