@@ -36,6 +36,13 @@ Import project SKbike.id dari GitHub (branch main1), setup & install dependencie
 
 - 2026-06 (re-import): Clone `main1` ke Emergent /app container (mobile/APK dikecualikan). Backend pip deps terinstall (requirements.txt bersih, tanpa litellm), frontend `yarn install` OK. `.env` backend dilengkapi: JWT_SECRET acak, ADMIN_EMAIL/PASSWORD, WHATSAPP_NUMBER, EMERGENT_LLM_KEY, FRONTEND_URL. Verifikasi lolos (testing_agent): /api/config 200, 10 produk, login admin, dashboard admin, storefront.
 
+- 2026-06: SEO produk — meta tag dinamis (title/description/OG/Twitter/canonical) di halaman `/produk/:id` via hook `useSeo`; endpoint `GET /api/share/produk/{id}` mengembalikan HTML ber-OG-tag (untuk crawler WhatsApp) lalu redirect ke halaman produk; tombol Bagikan/Salin Link kini memakai URL share tsb. Default OG tag di `index.html`.
+- 2026-06: Supplier & Kategori:
+  - Tab Supplier: tombol "Tambah Supplier" + "Edit" per supplier (modal `SupplierModal` dipakai bersama tab Pembelian)
+  - Pengaturan → "Kategori Produk": buat kategori baru (nama, label, gambar upload/URL, tampil di Beranda), edit, toggle tampil di Beranda, seret-lepas urutan + Simpan Urutan, arsipkan/aktifkan, hapus kategori arsip tanpa produk
+  - Kategori dinamis di koleksi `categories` (seed dari daftar lama); storefront (tile Beranda, tab Katalog, footer, form produk) ikut kategori aktif; kategori arsip + produknya tersembunyi dari toko; rename kategori ikut memperbarui produk; termasuk backup export/import
+  - Tested by testing_agent: backend & frontend 100% pass
+
 ## Backlog (P1/P2)
 - Section testimoni/galeri di beranda
 - Halaman detail produk penuh (saat ini modal)
